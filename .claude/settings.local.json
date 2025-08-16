@@ -11,7 +11,8 @@
       "Bash(npm run check:type:*)",
       "Bash(npm run check:lint:*)",
       "Bash(npm test)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

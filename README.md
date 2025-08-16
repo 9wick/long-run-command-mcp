@@ -34,10 +34,7 @@ Add the server to your Claude Desktop configuration file:
   "mcpServers": {
     "long-run-command": {
       "command": "npx",
-      "args": ["-y", "long-run-command-mcp"],
-      "env": {
-        "CONFIG_PATH": "/path/to/your/config.json"
-      }
+      "args": ["-y", "long-run-command-mcp", "--config", "/path/to/your/config.json"]
     }
   }
 }
@@ -173,10 +170,15 @@ npm run lint
 ```bash
 # Build and run with default config
 npm run build
-CONFIG_PATH=./config.json node dist/index.js
+node dist/index.js
 
-# Or use the development server
-CONFIG_PATH=./config.json npm run check
+# Run with custom config
+node dist/index.js --config /path/to/config.json
+# or short form
+node dist/index.js -c /path/to/config.json
+
+# Development mode with custom config
+npm run build && node dist/index.js --config ./config.json
 ```
 
 ## Contributing
