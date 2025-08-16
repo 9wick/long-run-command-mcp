@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm test)",
+      "Bash(grep:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run check:type:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run check:type:*)",
+      "Bash(npm run check:lint:*)",
+      "Bash(npm test)",
+      "Bash(npm run lint:*)"
     ],
     "deny": []
   }

@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "lint": "npx biome check --write ./src",
+    "check": "tsx watch src/server.ts",
+    "check:lint": "npx biome check ./src",
+    "check:type": "tsc --noEmit",
+    "test": "vitest run --config ./vitest.config.ts"
   },
   "repository": {
     "type": "git",
@@ -26,6 +31,10 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.3",
     "@types/node": "^24.3.0",
-    "dotenv": "^17.2.1"
+    "dotenv": "^17.2.1",
+    "zod": "^3.25.76"
+  },
+  "volta": {
+    "node": "24.6.0"
   }
 }

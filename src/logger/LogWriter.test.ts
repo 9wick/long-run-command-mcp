@@ -1,0 +1,110 @@
+import { promises as fs } from "node:fs";
+import * as path from "node:path";
+import { Readable } from "node:stream";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ConfigManager } from "../config/ConfigManager";
+import { LogWriter } from "./LogWriter";
+
+describe("LogWriter", () => {
+  describe("constructor", () => {
+    it("should create an instance", () => {
+      const configManager = new ConfigManager();
+      const logWriter = new LogWriter(configManager);
+      expect(logWriter).toBeInstanceOf(LogWriter);
+    });
+  });
+
+  describe("createLogPaths", () => {
+    let logWriter: LogWriter;
+    let configManager: ConfigManager;
+
+    beforeEach(() => {
+      configManager = new ConfigManager();
+      vi.spyOn(configManager, "getOutputDir").mockReturnValue("./output");
+      logWriter = new LogWriter(configManager);
+    });
+
+    it("should generate correct log paths", () => {
+      const key = "test";
+      const timestampBefore = Date.now();
+      const paths = logWriter.createLogPaths(key);
+      const timestampAfter = Date.now();
+
+      // パスの形式を確認
+      expect(paths.outputPath).toMatch(/^(\.\/)?output\/\d+-test-output\.log$/);
+      expect(paths.errorPath).toMatch(/^(\.\/)?output\/\d+-test-error\.log$/);
+
+      // タイムスタンプが正しい範囲にあることを確認
+      const outputTimestamp = parseInt(
+        path.basename(paths.outputPath).split("-")[0],
+        10,
+      );
+      const errorTimestamp = parseInt(
+        path.basename(paths.errorPath).split("-")[0],
+        10,
+      );
+
+      expect(outputTimestamp).toBeGreaterThanOrEqual(timestampBefore);
+      expect(outputTimestamp).toBeLessThanOrEqual(timestampAfter);
+      expect(outputTimestamp).toBe(errorTimestamp);
+    });
+
+    it("should generate different timestamps for different calls", async () => {
+      const paths1 = logWriter.createLogPaths("test1");
+      await new Promise((resolve) => setTimeout(resolve, 5)); // 少し待つ
+      const paths2 = logWriter.createLogPaths("test2");
+
+      expect(paths1.outputPath).not.toBe(paths2.outputPath);
+      expect(paths1.errorPath).not.toBe(paths2.errorPath);
+    });
+  });
+
+  describe("writeStreams", () => {
+    let logWriter: LogWriter;
+    let configManager: ConfigManager;
+    const testOutputDir = path.join(__dirname, "test-output");
+
+    beforeEach(() => {
+      configManager = new ConfigManager();
+      vi.spyOn(configManager, "getOutputDir").mockReturnValue(testOutputDir);
+      logWriter = new LogWriter(configManager);
+    });
+
+    afterEach(async () => {
+      try {
+        await fs.rm(testOutputDir, { recursive: true });
+      } catch (_error) {
+        // ディレクトリが存在しない場合は無視
+      }
+    });
+
+    it("should create output directory and write streams to files", async () => {
+      const stdoutData = "stdout test data";
+      const stderrData = "stderr test data";
+
+      const stdout = Readable.from([stdoutData]);
+      const stderr = Readable.from([stderrData]);
+
+      const paths = {
+        outputPath: path.join(testOutputDir, "test-output.log"),
+        errorPath: path.join(testOutputDir, "test-error.log"),
+      };
+
+      await logWriter.writeStreams(stdout, stderr, paths);
+
+      // ディレクトリが作成されたことを確認
+      const dirExists = await fs
+        .access(testOutputDir)
+        .then(() => true)
+        .catch(() => false);
+      expect(dirExists).toBe(true);
+
+      // ファイルの内容を確認
+      const outputContent = await fs.readFile(paths.outputPath, "utf-8");
+      const errorContent = await fs.readFile(paths.errorPath, "utf-8");
+
+      expect(outputContent).toBe(stdoutData);
+      expect(errorContent).toBe(stderrData);
+    });
+  });
+});

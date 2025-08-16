@@ -16,104 +16,104 @@
 
 ### 基盤整備
 
-[ ] **Task 1**: プロジェクト初期設定
+[x] **Task 1**: プロジェクト初期設定
   - 要件: 全般
   - 内容: tsconfig.json の設定確認、必要なディレクトリ作成
   - テスト: なし
 
 ### 型定義層
 
-[ ] **Task 2**: 型定義ファイルの作成
+[x] **Task 2**: 型定義ファイルの作成
   - 要件: 1, 3
   - 内容: src/types/index.ts に全ての型定義を実装
   - テスト: TypeScriptコンパイルが通ることを確認
 
 ### ConfigManager実装
 
-[ ] **Task 3**: ConfigManagerクラスの基本構造作成
+[x] **Task 3**: ConfigManagerクラスの基本構造作成
   - 要件: 3
   - 内容: src/config/ConfigManager.ts のクラス定義とコンストラクタ
   - テスト: インスタンス生成テスト
 
-[ ] **Task 4**: loadConfig メソッドの実装
+[x] **Task 4**: loadConfig メソッドの実装
   - 要件: 3
   - 内容: 設定ファイルの読み込み機能
   - テスト: 正常系のファイル読み込みテスト
 
-[ ] **Task 5**: validateConfig メソッドの実装
+[x] **Task 5**: validateConfig メソッドの実装
   - 要件: 3
   - 内容: 設定ファイルのバリデーション機能
   - テスト: 各種バリデーションエラーのテスト
 
-[ ] **Task 6**: getCommand メソッドの実装
+[x] **Task 6**: getCommand メソッドの実装
   - 要件: 1
   - 内容: キーからコマンド設定を取得する機能
   - テスト: 存在するキー/しないキーのテスト
 
-[ ] **Task 7**: getOutputDir と getAvailableKeys メソッドの実装
+[x] **Task 7**: getOutputDir と getAvailableKeys メソッドの実装
   - 要件: 1, 3
   - 内容: 出力ディレクトリとキー一覧取得機能
   - テスト: 各メソッドの正常系テスト
 
 ### LogWriter実装
 
-[ ] **Task 8**: LogWriterクラスの基本構造作成
+[x] **Task 8**: LogWriterクラスの基本構造作成
   - 要件: 1
   - 内容: src/logger/LogWriter.ts のクラス定義とコンストラクタ
   - テスト: インスタンス生成テスト
 
-[ ] **Task 9**: createLogPaths メソッドの実装
+[x] **Task 9**: createLogPaths メソッドの実装
   - 要件: 1
   - 内容: ログファイルパス生成機能
   - テスト: パス形式とタイムスタンプのテスト
 
-[ ] **Task 10**: writeStreams メソッドの実装
+[x] **Task 10**: writeStreams メソッドの実装
   - 要件: 1
   - 内容: ストリームをファイルに書き込む機能
   - テスト: モックストリームでの書き込みテスト
 
 ### CommandExecutor実装
 
-[ ] **Task 11**: CommandExecutorクラスの基本構造作成
+[x] **Task 11**: CommandExecutorクラスの基本構造作成
   - 要件: 1
   - 内容: src/executor/CommandExecutor.ts のクラス定義とコンストラクタ
   - テスト: インスタンス生成テスト
 
-[ ] **Task 12**: execute メソッドの基本実装
+[x] **Task 12**: execute メソッドの基本実装
   - 要件: 1
   - 内容: コマンド実行の基本フロー（作業ディレクトリ検証まで）
   - テスト: 作業ディレクトリ検証のテスト
 
-[ ] **Task 13**: execute メソッドのプロセス実行部分の実装
+[x] **Task 13**: execute メソッドのプロセス実行部分の実装
   - 要件: 1
   - 内容: spawn を使用したコマンド実行とログ書き込み
   - テスト: 簡単なコマンド（echo等）の実行テスト
 
 ### MCPServer実装
 
-[ ] **Task 14**: CommandExecutionServerクラスの基本構造作成
+[x] **Task 14**: CommandExecutionServerクラスの基本構造作成
   - 要件: 2
   - 内容: src/server.ts のクラス定義とコンストラクタ
   - テスト: インスタンス生成テスト
 
-[ ] **Task 15**: execute_command ツールの登録実装
+[x] **Task 15**: execute_command ツールの登録実装
   - 要件: 1, 2
   - 内容: MCPツールとしてコマンド実行機能を登録
   - テスト: ツール登録の確認テスト
 
-[ ] **Task 16**: list_commands ツールの登録実装
+[x] **Task 16**: list_commands ツールの登録実装
   - 要件: 2
   - 内容: 利用可能なコマンド一覧を返すツールの登録
   - テスト: ツール登録の確認テスト
 
-[ ] **Task 17**: start と stop メソッドの実装
+[x] **Task 17**: start と stop メソッドの実装
   - 要件: 2
   - 内容: サーバーの起動と停止処理
   - テスト: 起動・停止の動作確認テスト
 
 ### エントリーポイント実装
 
-[ ] **Task 18**: index.ts の実装
+[x] **Task 18**: index.ts の実装
   - 要件: 全般
   - 内容: main関数とシグナルハンドリング
   - テスト: なし（手動確認）
@@ -137,19 +137,19 @@
 
 ### 設定ファイルとドキュメント
 
-[ ] **Task 22**: サンプル設定ファイルの作成
+[x] **Task 22**: サンプル設定ファイルの作成
   - 要件: 3
   - 内容: config.example.json の作成
   - テスト: なし
 
-[ ] **Task 23**: README.md の作成
+[x] **Task 23**: README.md の作成
   - 要件: 全般
   - 内容: 使用方法とセットアップ手順の記載
   - テスト: なし
 
 ### 最終確認
 
-[ ] **Task 24**: 全体のlintとtype checkの実行
+[-] **Task 24**: 全体のlintとtype checkの実行
   - 要件: 全般
   - 内容: npm run lint と npm run typecheck の実行と修正
   - テスト: なし

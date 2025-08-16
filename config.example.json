@@ -1,0 +1,29 @@
+{
+  "outputdir": "./output",
+  "commands": {
+    "build": {
+      "workdir": "./",
+      "command": "npm run build"
+    },
+    "test": {
+      "workdir": "./",
+      "command": "npm test"
+    },
+    "lint": {
+      "workdir": "./",
+      "command": "npm run lint"
+    },
+    "typecheck": {
+      "workdir": "./",
+      "command": "npm run check:type"
+    },
+    "dev": {
+      "workdir": "./",
+      "command": "npm run dev"
+    },
+    "long-running-task": {
+      "workdir": "./scripts",
+      "command": "python long_running_script.py"
+    }
+  }
+}
