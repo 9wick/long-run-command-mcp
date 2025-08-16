@@ -44,10 +44,7 @@ Commands are defined in `config.json`:
   "commands": {
     "command-key": {
       "command": "executable",
-      "args": ["arg1", "arg2"],
-      "cwd": "/working/directory",
-      "stdoutLog": "stdout.log",
-      "stderrLog": "stderr.log"
+      "workdir": "/working/directory"
     }
   }
 }
