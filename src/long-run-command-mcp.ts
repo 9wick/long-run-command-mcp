@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { startServer } from "./server";
-import { readFileSync } from "fs";
-import { join } from "path";
 
 function getVersion(): string {
   const packageJsonPath = join(__dirname, "..", "package.json");
