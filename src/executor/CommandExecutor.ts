@@ -1,9 +1,18 @@
 import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
+import type { Config } from "../config/ConfigManager";
 import { createLogPaths } from "../logger/LogWriter";
-import type { Config } from "../types";
-import { ExecutionRequest, ExecutionResult } from "../types";
+
+export interface ExecutionRequest {
+  key: string;
+}
+
+export interface ExecutionResult {
+  outputPath: string;
+  errorPath: string;
+  exitCode: number;
+}
 
 async function validateWorkdir(workdir: string): Promise<void> {
   const absoluteWorkdir = path.resolve(workdir);

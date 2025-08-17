@@ -2,7 +2,11 @@ import { createWriteStream, promises as fs } from "node:fs";
 import * as path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { LogPaths } from "../types";
+
+export interface LogPaths {
+  outputPath: string;
+  errorPath: string;
+}
 
 export function createLogPaths(key: string, outputDir: string): LogPaths {
   const timestamp = Date.now();

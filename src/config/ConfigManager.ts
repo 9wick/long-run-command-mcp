@@ -1,6 +1,15 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import { CommandConfig, Config } from "../types";
+
+export interface Config {
+  outputdir: string;
+  commands: Record<string, CommandConfig>;
+}
+
+export interface CommandConfig {
+  workdir: string;
+  command: string;
+}
 
 function validateConfig(config: unknown): Config {
   if (!config || typeof config !== "object") {

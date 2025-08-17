@@ -1,12 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
+  type Config,
   getAvailableKeys,
   getCommand,
   loadConfig,
 } from "./config/ConfigManager";
 import { execute } from "./executor/CommandExecutor";
-import type { Config } from "./types";
 
 function createCommandTool(
   mcpServer: McpServer,

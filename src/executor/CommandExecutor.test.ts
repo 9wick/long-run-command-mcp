@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Config } from "../types";
+import type { Config } from "../config/ConfigManager";
 import { execute } from "./CommandExecutor";
 
 describe("CommandExecutor", () => {
