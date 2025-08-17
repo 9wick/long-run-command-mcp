@@ -65,7 +65,11 @@ describe("CommandExecutor", () => {
       expect(outputExists).toBe(true);
 
       // 出力内容を確認
+      console.log("[TEST] Reading output file:", result.outputPath);
       const outputContent = await fs.readFile(result.outputPath, "utf-8");
+      console.log("[TEST] Output content:", JSON.stringify(outputContent));
+      console.log("[TEST] Output content length:", outputContent.length);
+      console.log("[TEST] Output content trimmed:", JSON.stringify(outputContent.trim()));
       expect(outputContent.trim()).toContain("test output");
 
       // クリーンアップ
