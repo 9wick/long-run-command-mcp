@@ -54,12 +54,12 @@ export class CommandExecutor {
         if (writePromise) {
           try {
             await writePromise;
-          } catch (error) {
+          } catch (_error) {
             // エラーは既に reject で処理されている
             return;
           }
         }
-        
+
         resolve({
           outputPath: logPaths.outputPath,
           errorPath: logPaths.errorPath,

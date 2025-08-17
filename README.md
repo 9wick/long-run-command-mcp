@@ -74,12 +74,15 @@ Create a `config.json` file to define your commands:
 
 ## Available Tools
 
-### execute_command
+This server dynamically generates tools based on your configuration. Each command in your `config.json` becomes an individual tool.
 
-Executes a predefined command by its key.
+For the example configuration above, the following tools would be available:
 
-**Parameters:**
-- `key` (string): The command key defined in config.json
+### run_build_frontend
+
+Executes the build_frontend command: `npm run build` (workdir: /home/user/project/frontend)
+
+**Parameters:** None
 
 **Returns:**
 ```json
@@ -91,36 +94,46 @@ Executes a predefined command by its key.
 }
 ```
 
-### list_commands
+### run_test_backend
 
-Lists all available command keys.
+Executes the test_backend command: `pytest tests/` (workdir: /home/user/project/backend)
 
-**Returns:**
-```json
-{
-  "availableCommands": ["build_frontend", "test_backend", "deploy_staging"]
-}
-```
+**Parameters:** None
+
+**Returns:** Same format as above
+
+### run_deploy_staging
+
+Executes the deploy_staging command: `./scripts/deploy.sh staging` (workdir: /home/user/project)
+
+**Parameters:** None
+
+**Returns:** Same format as above
+
+**Note:** Tool names are generated as `run_<command_key>`. Special characters in command keys are replaced with underscores.
 
 ## Example Usage
 
 Here's how to use this MCP server with Claude:
 
-1. **List available commands:**
-   ```
-   "I need to see what commands are available"
-   ```
-   Claude will use `list_commands` to show you all configured commands.
+1. **View available tools:**
+   When Claude connects to the server, it automatically discovers all available tools based on your configuration. Each command appears as a separate tool.
 
 2. **Execute a command:**
    ```
-   "Run the build_frontend command"
+   "Run the frontend build"
    ```
-   Claude will execute the command and provide you with the log file paths.
+   Claude will use the `run_build_frontend` tool to execute the command and provide you with the log file paths.
 
-3. **Check command output:**
+3. **Run multiple commands:**
    ```
-   "Show me the output from the build_frontend command"
+   "Build the frontend and then run the backend tests"
+   ```
+   Claude can execute `run_build_frontend` followed by `run_test_backend`.
+
+4. **Check command output:**
+   ```
+   "Show me the output from the build"
    ```
    Claude can read the log files to show you the command results.
 
@@ -170,15 +183,15 @@ npm run lint
 ```bash
 # Build and run with default config
 npm run build
-node dist/index.js
+node dist/long-run-command-mcp.js
 
 # Run with custom config
-node dist/index.js --config /path/to/config.json
+node dist/long-run-command-mcp.js --config /path/to/config.json
 # or short form
-node dist/index.js -c /path/to/config.json
+node dist/long-run-command-mcp.js -c /path/to/config.json
 
 # Development mode with custom config
-npm run build && node dist/index.js --config ./config.json
+npm run build && node dist/long-run-command-mcp.js --config ./config.json
 ```
 
 ## Contributing
