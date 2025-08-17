@@ -28,12 +28,17 @@ export class CommandExecutionServer {
 
     for (const key of commandKeys) {
       const command = this.configManager.getCommand(key);
+      const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, "_");
 
       // コマンドごとに個別のツールを作成
       this.mcpServer.tool(
-        `run_${key}`,
+        `run_${safeKey}`,
         `Execute ${key} command: ${command.command} (workdir: ${command.workdir})`,
-        {},
+        {
+          type: "object",
+          properties: {},
+          additionalProperties: false,
+        },
         async () => {
           try {
             const result = await this.executor.execute({ key });
