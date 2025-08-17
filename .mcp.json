@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "long-run-command-mcp-dev": {
+      "command": "node",
+      "args": ["dist/long-run-command-mcp.js", "-c", "config.example.json"]
+    }
+  }
+}

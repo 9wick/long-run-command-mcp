@@ -29,7 +29,7 @@ This is an MCP (Model Context Protocol) server that manages and executes long-ru
 2. **Executor Layer** (`src/executor/CommandExecutor.ts`): Manages command execution, process lifecycle, and output streaming
 3. **Config Layer** (`src/config/ConfigManager.ts`): Handles loading and validation of command configurations
 4. **Logger Layer** (`src/logger/LogWriter.ts`): Manages separate stdout/stderr log files for each command execution
-5. **Types** (`src/types/index.ts`): Shared type definitions using Zod schemas
+5. **Types** (`src/types/long-run-command-mcp.ts`): Shared type definitions using Zod schemas
 
 ### Key Design Patterns
 - **Dependency Injection**: Classes receive dependencies through constructor parameters

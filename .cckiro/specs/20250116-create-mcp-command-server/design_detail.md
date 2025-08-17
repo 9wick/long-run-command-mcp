@@ -8,10 +8,10 @@
 
 ```
 src/
-├── index.ts                 # エントリーポイント
+├── long-run-command-mcp.ts                 # エントリーポイント
 ├── server.ts               # MCPサーバー実装
 ├── types/
-│   └── index.ts            # 型定義
+│   └── long-run-command-mcp.ts            # 型定義
 ├── config/
 │   └── ConfigManager.ts    # 設定管理
 ├── executor/
@@ -22,7 +22,7 @@ src/
 
 ## 各レイヤー・クラスの詳細設計
 
-### 1. エントリーポイント (src/index.ts)
+### 1. エントリーポイント (src/long-run-command-mcp.ts)
 
 **責務**: サーバーの起動とシャットダウン管理
 
@@ -42,7 +42,7 @@ async function main(): Promise<void> {
 }
 ```
 
-### 2. 型定義 (src/types/index.ts)
+### 2. 型定義 (src/types/long-run-command-mcp.ts)
 
 **責務**: 共通型定義
 

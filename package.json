@@ -1,22 +1,34 @@
 {
   "name": "long-run-command-mcp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "MCP server for executing predefined long-running commands with output logging",
+  "main": "dist/long-run-command-mcp.js",
+  "bin": {
+    "long-run-command-mcp": "dist/long-run-command-mcp.js"
+  },
   "scripts": {
     "build": "tsc",
+    "clean": "rm -rf dist && rm tsconfig.tsbuildinfo",
+    "debug": "npx @modelcontextprotocol/inspector tsx src/long-run-command-mcp.ts -c config.example.json",
     "lint": "npx biome check --write ./src",
     "check": "tsx watch src/server.ts",
     "check:lint": "npx biome check ./src",
     "check:type": "tsc --noEmit",
-    "test": "vitest run --config ./vitest.config.ts"
+    "test": "vitest run --config ./vitest.config.ts",
+    "prepublishOnly": "npm run build && npm run test"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/9wick/long-run-command-mcp.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "command-runner",
+    "long-running-commands"
+  ],
+  "author": "kido",
   "license": "MIT",
   "type": "commonjs",
   "bugs": {
@@ -25,6 +37,8 @@
   "homepage": "https://github.com/9wick/long-run-command-mcp#readme",
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",
+    "@modelcontextprotocol/inspector": "^0.16.4",
+    "tsx": "^4.20.4",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
@@ -36,5 +50,10 @@
   },
   "volta": {
     "node": "24.6.0"
-  }
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ]
 }

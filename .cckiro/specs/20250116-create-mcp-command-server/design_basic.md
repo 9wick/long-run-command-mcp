@@ -83,7 +83,7 @@ sequenceDiagram
 
 ## 主要コンポーネント設計
 
-### 1. MCP Server (src/index.ts)
+### 1. MCP Server (src/long-run-command-mcp.ts)
 - **責務**: MCPプロトコルの実装とリクエストハンドリング
 - **主要インターフェース**:
   ```typescript

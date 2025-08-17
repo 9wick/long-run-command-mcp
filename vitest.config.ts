@@ -19,7 +19,7 @@ export default defineConfig({
         'dist/'
       ]
     },
-    setupFiles: ['./src/test/setup.ts']
+    setupFiles: ['./test/setup.ts']
   },
 });
 

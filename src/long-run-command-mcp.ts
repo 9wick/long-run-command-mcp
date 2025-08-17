@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { CommandExecutionServer } from "./server";
 
 // 副作用: あり（プロセス起動）

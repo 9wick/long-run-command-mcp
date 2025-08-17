@@ -1,5 +1,5 @@
 {
-  "outputdir": "./output",
+  "outputdir": "./logs",
   "commands": {
     "build": {
       "workdir": "./",
@@ -16,14 +16,6 @@
     "typecheck": {
       "workdir": "./",
       "command": "npm run check:type"
-    },
-    "dev": {
-      "workdir": "./",
-      "command": "npm run dev"
-    },
-    "long-running-task": {
-      "workdir": "./scripts",
-      "command": "python long_running_script.py"
     }
   }
 }

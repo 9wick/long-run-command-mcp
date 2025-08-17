@@ -25,7 +25,7 @@
 
 [x] **Task 2**: 型定義ファイルの作成
   - 要件: 1, 3
-  - 内容: src/types/index.ts に全ての型定義を実装
+  - 内容: src/types/long-run-command-mcp.ts に全ての型定義を実装
   - テスト: TypeScriptコンパイルが通ることを確認
 
 ### ConfigManager実装
@@ -113,7 +113,7 @@
 
 ### エントリーポイント実装
 
-[x] **Task 18**: index.ts の実装
+[x] **Task 18**: long-run-command-mcp.ts の実装
   - 要件: 全般
   - 内容: main関数とシグナルハンドリング
   - テスト: なし（手動確認）
