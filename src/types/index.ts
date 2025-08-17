@@ -1,4 +1,3 @@
-// 副作用: なし
 export interface Config {
   outputdir: string;
   commands: Record<string, CommandConfig>;

@@ -1,96 +1,92 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { ConfigManager } from "./config/ConfigManager";
-import { CommandExecutor } from "./executor/CommandExecutor";
+import {
+  getAvailableKeys,
+  getCommand,
+  loadConfig,
+} from "./config/ConfigManager";
+import { execute } from "./executor/CommandExecutor";
+import type { Config } from "./types";
 
-export class CommandExecutionServer {
-  private mcpServer: McpServer;
-  private configManager: ConfigManager;
-  private executor: CommandExecutor;
-  private transport: StdioServerTransport;
+function createCommandTool(
+  mcpServer: McpServer,
+  key: string,
+  config: Config,
+): void {
+  const command = getCommand(config, key);
+  const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, "_");
 
-  constructor(private configPath: string) {
-    this.mcpServer = new McpServer({
-      name: "long-run-command-mcp",
-      version: "1.0.0",
-    });
-    this.configManager = new ConfigManager();
-    this.executor = new CommandExecutor(this.configManager);
-    this.transport = new StdioServerTransport();
-  }
+  mcpServer.tool(
+    `run_${safeKey}`,
+    `Execute ${key} command: ${command.command} (workdir: ${command.workdir})`,
+    {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+    },
+    async () => {
+      try {
+        const result = await execute({ key }, config);
 
-  // 副作用: あり（サーバー起動、設定ファイル読み込み）
-  async start(): Promise<void> {
-    await this.configManager.loadConfig(this.configPath);
-
-    // 設定に基づいて各コマンドを個別のツールとして登録
-    const commandKeys = this.configManager.getAvailableKeys();
-
-    for (const key of commandKeys) {
-      const command = this.configManager.getCommand(key);
-      const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, "_");
-
-      // コマンドごとに個別のツールを作成
-      this.mcpServer.tool(
-        `run_${safeKey}`,
-        `Execute ${key} command: ${command.command} (workdir: ${command.workdir})`,
-        {
-          type: "object",
-          properties: {},
-          additionalProperties: false,
-        },
-        async () => {
-          try {
-            const command = this.configManager.getCommand(key);
-            const result = await this.executor.execute({ key });
-
-            return {
-              content: [
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
                 {
-                  type: "text",
-                  text: JSON.stringify(
-                    {
-                      success: true,
-                      command: command.command,
-                      workdir: command.workdir,
-                      outputPath: result.outputPath,
-                      errorPath: result.errorPath,
-                      exitCode: result.exitCode,
-                    },
-                    null,
-                    2,
-                  ),
+                  success: true,
+                  command: command.command,
+                  workdir: command.workdir,
+                  outputPath: result.outputPath,
+                  errorPath: result.errorPath,
+                  exitCode: result.exitCode,
                 },
-              ],
-            };
-          } catch (error) {
-            return {
-              content: [
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
                 {
-                  type: "text",
-                  text: JSON.stringify(
-                    {
-                      success: false,
-                      error:
-                        error instanceof Error ? error.message : String(error),
-                    },
-                    null,
-                    2,
-                  ),
+                  success: false,
+                  error: error instanceof Error ? error.message : String(error),
                 },
-              ],
-            };
-          }
-        },
-      );
-    }
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+    },
+  );
+}
 
-    // サーバーを開始
-    await this.mcpServer.connect(this.transport);
+export async function startServer(
+  configPath: string,
+): Promise<() => Promise<void>> {
+  const mcpServer = new McpServer({
+    name: "long-run-command-mcp",
+    version: "1.0.0",
+  });
+  const transport = new StdioServerTransport();
+
+  const config = await loadConfig(configPath);
+  const commandKeys = getAvailableKeys(config);
+
+  for (const key of commandKeys) {
+    createCommandTool(mcpServer, key, config);
   }
 
-  // 副作用: あり（サーバー停止）
-  async stop(): Promise<void> {
-    await this.mcpServer.close();
-  }
+  await mcpServer.connect(transport);
+
+  return async () => {
+    await mcpServer.close();
+  };
 }

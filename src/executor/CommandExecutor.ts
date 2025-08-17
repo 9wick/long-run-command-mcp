@@ -1,68 +1,71 @@
 import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import { ConfigManager } from "../config/ConfigManager";
-import { LogWriter } from "../logger/LogWriter";
+import { createLogPaths } from "../logger/LogWriter";
+import type { Config } from "../types";
 import { ExecutionRequest, ExecutionResult } from "../types";
 
-export class CommandExecutor {
-  private logWriter: LogWriter;
-
-  constructor(private configManager: ConfigManager) {
-    this.logWriter = new LogWriter(configManager);
+async function validateWorkdir(workdir: string): Promise<void> {
+  const absoluteWorkdir = path.resolve(workdir);
+  try {
+    await fs.access(absoluteWorkdir);
+  } catch {
+    throw new Error(`Working directory does not exist: ${absoluteWorkdir}`);
   }
+}
 
-  // 副作用: あり（プロセス実行、ファイル書き込み）
-  async execute(request: ExecutionRequest): Promise<ExecutionResult> {
-    const { key } = request;
-    const command = this.configManager.getCommand(key);
+function executeCommand(
+  command: string,
+  workdir: string,
+  logPaths: { outputPath: string; errorPath: string },
+): Promise<ExecutionResult> {
+  return new Promise((resolve, reject) => {
+    const isWindows = process.platform === "win32";
+    const shell = isWindows ? "cmd.exe" : "/bin/sh";
 
-    // 作業ディレクトリの検証
-    const absoluteWorkdir = path.resolve(command.workdir);
-    try {
-      await fs.access(absoluteWorkdir);
-    } catch {
-      throw new Error(`Working directory does not exist: ${absoluteWorkdir}`);
-    }
+    const redirectCommand = `${command} > "${logPaths.outputPath}" 2> "${logPaths.errorPath}"`;
+    const shellArgs = isWindows
+      ? ["/c", redirectCommand]
+      : ["-c", redirectCommand];
 
-    // ログパスの生成
-    const logPaths = this.logWriter.createLogPaths(key);
+    const childProcess = spawn(shell, shellArgs, {
+      cwd: path.resolve(workdir),
+      stdio: "inherit",
+    });
 
-    // 出力ディレクトリを作成
-    const outputDir = path.dirname(logPaths.outputPath);
-    await fs.mkdir(outputDir, { recursive: true });
+    childProcess.on("error", (error) => {
+      reject(new Error(`Command execution failed: ${error.message}`));
+    });
 
-    // コマンド実行
-    return new Promise((resolve, reject) => {
-      // シェルのリダイレクトを使用してファイルに直接出力
-      const isWindows = process.platform === "win32";
-      const shell = isWindows ? "cmd.exe" : "/bin/sh";
+    childProcess.on("exit", async (code) => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // コマンドにリダイレクトを追加
-      const redirectCommand = `${command.command} > "${logPaths.outputPath}" 2> "${logPaths.errorPath}"`;
-      const shellArgs = isWindows
-        ? ["/c", redirectCommand]
-        : ["-c", redirectCommand];
-
-      const childProcess = spawn(shell, shellArgs, {
-        cwd: absoluteWorkdir,
-        stdio: "inherit", // 親プロセスのstdioを継承（ただし、リダイレクトされる）
-      });
-
-      childProcess.on("error", (error) => {
-        reject(new Error(`Command execution failed: ${error.message}`));
-      });
-
-      childProcess.on("exit", async (code) => {
-        // ファイルが確実に書き込まれるまで少し待機
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        resolve({
-          outputPath: logPaths.outputPath,
-          errorPath: logPaths.errorPath,
-          exitCode: code || 0,
-        });
+      resolve({
+        outputPath: logPaths.outputPath,
+        errorPath: logPaths.errorPath,
+        exitCode: code || 0,
       });
     });
+  });
+}
+
+export async function execute(
+  request: ExecutionRequest,
+  config: Config,
+): Promise<ExecutionResult> {
+  const { key } = request;
+  const command = config.commands[key];
+
+  if (!command) {
+    throw new Error(`Unknown command key: ${key}`);
   }
+
+  await validateWorkdir(command.workdir);
+
+  const logPaths = createLogPaths(key, config.outputdir);
+
+  const outputDir = path.dirname(logPaths.outputPath);
+  await fs.mkdir(outputDir, { recursive: true });
+
+  return executeCommand(command.command, command.workdir, logPaths);
 }

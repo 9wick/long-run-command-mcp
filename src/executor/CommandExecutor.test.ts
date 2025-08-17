@@ -1,53 +1,54 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ConfigManager } from "../config/ConfigManager";
-import { CommandExecutor } from "./CommandExecutor";
+import type { Config } from "../types";
+import { execute } from "./CommandExecutor";
 
 describe("CommandExecutor", () => {
-  describe("constructor", () => {
-    it("should create an instance", () => {
-      const configManager = new ConfigManager();
-      const executor = new CommandExecutor(configManager);
-      expect(executor).toBeInstanceOf(CommandExecutor);
-    });
-  });
-
   describe("execute", () => {
-    let executor: CommandExecutor;
-    let configManager: ConfigManager;
-
-    beforeEach(() => {
-      configManager = new ConfigManager();
-      executor = new CommandExecutor(configManager);
-    });
-
     it("should throw error when working directory does not exist", async () => {
       const nonExistentDir = path.join(__dirname, "non-existent-directory");
-      vi.spyOn(configManager, "getCommand").mockReturnValue({
-        workdir: nonExistentDir,
-        command: "echo test",
-      });
+      const config: Config = {
+        outputdir: "./output",
+        commands: {
+          test: {
+            workdir: nonExistentDir,
+            command: "echo test",
+          },
+        },
+      };
 
-      await expect(executor.execute({ key: "test" })).rejects.toThrow(
+      await expect(execute({ key: "test" }, config)).rejects.toThrow(
         `Working directory does not exist: ${path.resolve(nonExistentDir)}`,
+      );
+    });
+
+    it("should throw error when command key does not exist", async () => {
+      const config: Config = {
+        outputdir: "./output",
+        commands: {},
+      };
+
+      await expect(execute({ key: "test" }, config)).rejects.toThrow(
+        "Unknown command key: test",
       );
     });
 
     it("should execute simple command successfully", async () => {
       const testOutputDir = path.join(__dirname, "test-output");
-
-      // テスト用の出力ディレクトリを作成
       await fs.mkdir(testOutputDir, { recursive: true });
 
-      // 出力ディレクトリを返すようにモック
-      vi.spyOn(configManager, "getOutputDir").mockReturnValue(testOutputDir);
-      vi.spyOn(configManager, "getCommand").mockReturnValue({
-        workdir: __dirname,
-        command: 'echo "test output"',
-      });
+      const config: Config = {
+        outputdir: testOutputDir,
+        commands: {
+          test: {
+            workdir: __dirname,
+            command: 'echo "test output"',
+          },
+        },
+      };
 
-      const result = await executor.execute({ key: "test" });
+      const result = await execute({ key: "test" }, config);
 
       // 結果の確認
       expect(result).toHaveProperty("outputPath");
@@ -71,17 +72,19 @@ describe("CommandExecutor", () => {
 
     it("should handle command execution errors", async () => {
       const testOutputDir = path.join(__dirname, "test-output");
-
-      // テスト用の出力ディレクトリを作成
       await fs.mkdir(testOutputDir, { recursive: true });
 
-      vi.spyOn(configManager, "getOutputDir").mockReturnValue(testOutputDir);
-      vi.spyOn(configManager, "getCommand").mockReturnValue({
-        workdir: __dirname,
-        command: "nonexistentcommand123",
-      });
+      const config: Config = {
+        outputdir: testOutputDir,
+        commands: {
+          test: {
+            workdir: __dirname,
+            command: "nonexistentcommand123",
+          },
+        },
+      };
 
-      const result = await executor.execute({ key: "test" });
+      const result = await execute({ key: "test" }, config);
 
       // エラーでもexitCodeが返されることを確認
       expect(result.exitCode).not.toBe(0);

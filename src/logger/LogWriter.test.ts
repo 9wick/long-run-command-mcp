@@ -2,32 +2,15 @@ import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { Readable } from "node:stream";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ConfigManager } from "../config/ConfigManager";
-import { LogWriter } from "./LogWriter";
+import { createLogPaths, writeStreams } from "./LogWriter";
 
 describe("LogWriter", () => {
-  describe("constructor", () => {
-    it("should create an instance", () => {
-      const configManager = new ConfigManager();
-      const logWriter = new LogWriter(configManager);
-      expect(logWriter).toBeInstanceOf(LogWriter);
-    });
-  });
-
   describe("createLogPaths", () => {
-    let logWriter: LogWriter;
-    let configManager: ConfigManager;
-
-    beforeEach(() => {
-      configManager = new ConfigManager();
-      vi.spyOn(configManager, "getOutputDir").mockReturnValue("./output");
-      logWriter = new LogWriter(configManager);
-    });
-
     it("should generate correct log paths", () => {
       const key = "test";
+      const outputDir = "./output";
       const timestampBefore = Date.now();
-      const paths = logWriter.createLogPaths(key);
+      const paths = createLogPaths(key, outputDir);
       const timestampAfter = Date.now();
 
       // パスの形式を確認
@@ -50,9 +33,10 @@ describe("LogWriter", () => {
     });
 
     it("should generate different timestamps for different calls", async () => {
-      const paths1 = logWriter.createLogPaths("test1");
+      const outputDir = "./output";
+      const paths1 = createLogPaths("test1", outputDir);
       await new Promise((resolve) => setTimeout(resolve, 5)); // 少し待つ
-      const paths2 = logWriter.createLogPaths("test2");
+      const paths2 = createLogPaths("test2", outputDir);
 
       expect(paths1.outputPath).not.toBe(paths2.outputPath);
       expect(paths1.errorPath).not.toBe(paths2.errorPath);
@@ -60,15 +44,7 @@ describe("LogWriter", () => {
   });
 
   describe("writeStreams", () => {
-    let logWriter: LogWriter;
-    let configManager: ConfigManager;
     const testOutputDir = path.join(__dirname, "test-output");
-
-    beforeEach(() => {
-      configManager = new ConfigManager();
-      vi.spyOn(configManager, "getOutputDir").mockReturnValue(testOutputDir);
-      logWriter = new LogWriter(configManager);
-    });
 
     afterEach(async () => {
       try {
@@ -90,7 +66,7 @@ describe("LogWriter", () => {
         errorPath: path.join(testOutputDir, "test-error.log"),
       };
 
-      await logWriter.writeStreams(stdout, stderr, paths);
+      await writeStreams(stdout, stderr, paths);
 
       // ディレクトリが作成されたことを確認
       const dirExists = await fs

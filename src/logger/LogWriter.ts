@@ -2,40 +2,30 @@ import { createWriteStream, promises as fs } from "node:fs";
 import * as path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { ConfigManager } from "../config/ConfigManager";
 import { LogPaths } from "../types";
 
-export class LogWriter {
-  constructor(private configManager: ConfigManager) {}
+export function createLogPaths(key: string, outputDir: string): LogPaths {
+  const timestamp = Date.now();
 
-  // 副作用: なし
-  createLogPaths(key: string): LogPaths {
-    const outputDir = this.configManager.getOutputDir();
-    const timestamp = Date.now();
+  return {
+    outputPath: path.join(outputDir, `${timestamp}-${key}-output.log`),
+    errorPath: path.join(outputDir, `${timestamp}-${key}-error.log`),
+  };
+}
 
-    return {
-      outputPath: path.join(outputDir, `${timestamp}-${key}-output.log`),
-      errorPath: path.join(outputDir, `${timestamp}-${key}-error.log`),
-    };
-  }
+export async function writeStreams(
+  stdout: Readable,
+  stderr: Readable,
+  paths: LogPaths,
+): Promise<void> {
+  const outputDir = path.dirname(paths.outputPath);
+  await fs.mkdir(outputDir, { recursive: true });
 
-  // 副作用: あり（ファイル書き込み）
-  async writeStreams(
-    stdout: Readable,
-    stderr: Readable,
-    paths: LogPaths,
-  ): Promise<void> {
-    // 出力ディレクトリの作成
-    const outputDir = path.dirname(paths.outputPath);
-    await fs.mkdir(outputDir, { recursive: true });
+  const outputWrite = createWriteStream(paths.outputPath);
+  const errorWrite = createWriteStream(paths.errorPath);
 
-    // ストリームをファイルに書き込み
-    const outputWrite = createWriteStream(paths.outputPath);
-    const errorWrite = createWriteStream(paths.errorPath);
-
-    await Promise.all([
-      pipeline(stdout, outputWrite),
-      pipeline(stderr, errorWrite),
-    ]);
-  }
+  await Promise.all([
+    pipeline(stdout, outputWrite),
+    pipeline(stderr, errorWrite),
+  ]);
 }
