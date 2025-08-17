@@ -1,6 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
 import { ConfigManager } from "./config/ConfigManager";
 import { CommandExecutor } from "./executor/CommandExecutor";
 
@@ -24,76 +23,59 @@ export class CommandExecutionServer {
   async start(): Promise<void> {
     await this.configManager.loadConfig(this.configPath);
 
-    // execute_command ツールの登録
-    this.mcpServer.tool(
-      "execute_command",
-      "Execute a predefined command by key",
-      { key: z.string().describe("Command key to execute") },
-      async ({ key }) => {
-        try {
-          const result = await this.executor.execute({ key });
+    // 設定に基づいて各コマンドを個別のツールとして登録
+    const commandKeys = this.configManager.getAvailableKeys();
 
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(
-                  {
-                    success: true,
-                    outputPath: result.outputPath,
-                    errorPath: result.errorPath,
-                    exitCode: result.exitCode,
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          };
-        } catch (error) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(
-                  {
-                    success: false,
-                    error:
-                      error instanceof Error ? error.message : String(error),
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          };
-        }
-      },
-    );
+    for (const key of commandKeys) {
+      const command = this.configManager.getCommand(key);
 
-    // list_commands ツールの登録
-    this.mcpServer.tool(
-      "list_commands",
-      "List all available command keys",
-      {},
-      async () => {
-        const commands = this.configManager.getAvailableKeys();
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
+      // コマンドごとに個別のツールを作成
+      this.mcpServer.tool(
+        `run_${key}`,
+        `Execute ${key} command: ${command.command}`,
+        {},
+        async () => {
+          try {
+            const result = await this.executor.execute({ key });
+
+            return {
+              content: [
                 {
-                  availableCommands: commands,
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      success: true,
+                      outputPath: result.outputPath,
+                      errorPath: result.errorPath,
+                      exitCode: result.exitCode,
+                    },
+                    null,
+                    2,
+                  ),
                 },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
-      },
-    );
+              ],
+            };
+          } catch (error) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(
+                    {
+                      success: false,
+                      error:
+                        error instanceof Error ? error.message : String(error),
+                    },
+                    null,
+                    2,
+                  ),
+                },
+              ],
+            };
+          }
+        },
+      );
+    }
 
     // サーバーを開始
     await this.mcpServer.connect(this.transport);
