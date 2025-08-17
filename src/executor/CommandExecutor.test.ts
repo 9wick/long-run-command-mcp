@@ -1,12 +1,15 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import type { Config } from "../config/ConfigManager";
-import { execute } from "./CommandExecutor";
+import type { Config } from "../config/ConfigManager.ts";
+import { execute } from "./CommandExecutor.ts";
 
 describe("CommandExecutor", () => {
   describe("execute", () => {
     it("should throw error when working directory does not exist", async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
       const nonExistentDir = path.join(__dirname, "non-existent-directory");
       const config: Config = {
         outputdir: "./output",

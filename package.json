@@ -1,21 +1,20 @@
 {
   "name": "long-run-command-mcp",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "MCP server for executing predefined long-running commands with output logging",
-  "main": "dist/long-run-command-mcp.js",
+  "main": "./dist/long-run-command-mcp.js",
   "bin": {
     "long-run-command-mcp": "dist/long-run-command-mcp.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsdown",
     "clean": "rm -rf dist && rm tsconfig.tsbuildinfo",
     "debug": "npx @modelcontextprotocol/inspector tsx src/long-run-command-mcp.ts -c config.example.json",
     "debug:released": "npx @modelcontextprotocol/inspector npx -y long-run-command-mcp@latest -c config.example.json",
-    "debug:version": "npx @modelcontextprotocol/inspector npx -y long-run-command-mcp@0.2.0 -c config.example.json",
     "lint": "npx biome check --write ./src",
     "check": "npm run check:lint && npm run check:type",
     "check:lint": "npx biome check ./src",
-    "check:type": "tsc --noEmit",
+    "check:type": "tsgo --noEmit",
     "test": "vitest run --config ./vitest.config.ts",
     "prepublishOnly": "npm run build && npm run test"
   },
@@ -30,9 +29,9 @@
     "command-runner",
     "long-running-commands"
   ],
-  "author": "kido",
+  "author": "9wick",
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/9wick/long-run-command-mcp/issues"
   },
@@ -40,15 +39,18 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.0",
     "@modelcontextprotocol/inspector": "^0.16.4",
+    "@types/node": "^24.3.0",
+    "@typescript/native-preview": "^7.0.0-dev.20250816.1",
+    "dotenv": "^17.2.1",
+    "publint": "^0.3.12",
+    "tsdown": "^0.14.1",
     "tsx": "^4.20.4",
     "typescript": "^5.9.2",
+    "unplugin-unused": "^0.5.1",
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.3",
-    "@types/node": "^24.3.0",
-    "dotenv": "^17.2.1",
-    "zod": "^3.25.76"
+    "@modelcontextprotocol/sdk": "^1.17.3"
   },
   "volta": {
     "node": "24.6.0"
@@ -57,5 +59,11 @@
     "dist/**/*",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "exports": {
+    ".": "./dist/long-run-command-mcp.js",
+    "./package.json": "./package.json"
+  },
+  "module": "./dist/long-run-command-mcp.js",
+  "types": "./dist/long-run-command-mcp.d.ts"
 }

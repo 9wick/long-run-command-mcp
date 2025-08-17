@@ -1,13 +1,15 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import packageJson from "../package.json";
 import {
   type Config,
   getAvailableKeys,
   getCommand,
   loadConfig,
-} from "./config/ConfigManager";
-import { execute } from "./executor/CommandExecutor";
+} from "./config/ConfigManager.ts";
+import { execute } from "./executor/CommandExecutor.ts";
 
 function createCommandTool(
   mcpServer: McpServer,
@@ -72,6 +74,12 @@ function createCommandTool(
 export async function startServer(
   configPath: string,
 ): Promise<() => Promise<void>> {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const packageJson = JSON.parse(
+    readFileSync(join(__dirname, "..", "package.json"), "utf-8"),
+  );
+
   const mcpServer = new McpServer({
     name: "long-run-command-mcp",
     version: packageJson.version,

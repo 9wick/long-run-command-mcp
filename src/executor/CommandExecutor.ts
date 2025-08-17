@@ -1,8 +1,8 @@
 import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import type { Config } from "../config/ConfigManager";
-import { createLogPaths } from "../logger/LogWriter";
+import type { Config } from "../config/ConfigManager.ts";
+import { createLogPaths } from "../logger/LogWriter.ts";
 
 export interface ExecutionRequest {
   key: string;
