@@ -14,10 +14,7 @@ This MCP server allows you to:
 
 ```bash
 # Install from npm (when published)
-claude mcp add long-run-command-mcp npx -- -y long-run-command-mcp
-
-# Or install directly from GitHub
-claude mcp add long-run-command-mcp npx -- -y 9wick/long-run-command-mcp
+claude mcp add long-run-command-mcp npx -- -y long-run-command-mcp --config /path/to/your/config.json
 ```
 
 ## Configuration
