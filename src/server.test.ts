@@ -61,7 +61,6 @@ describe("startServer", () => {
       {
         type: "object",
         properties: {},
-        additionalProperties: false,
       },
       expect.any(Function),
     );
@@ -71,7 +70,6 @@ describe("startServer", () => {
       {
         type: "object",
         properties: {},
-        additionalProperties: false,
       },
       expect.any(Function),
     );

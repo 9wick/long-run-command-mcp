@@ -9,6 +9,7 @@ export interface Config {
 export interface CommandConfig {
   workdir: string;
   command: string;
+  additionalArgs?: boolean;
 }
 
 function validateConfig(config: unknown): Config {
@@ -49,6 +50,14 @@ function validateConfig(config: unknown): Config {
         `Config validation error: commands.${key}.command is required and must be a string`,
       );
     }
+    if (
+      cmd.additionalArgs !== undefined &&
+      typeof cmd.additionalArgs !== "boolean"
+    ) {
+      throw new Error(
+        `Config validation error: commands.${key}.additionalArgs must be a boolean`,
+      );
+    }
   }
 
   return cfg as unknown as Config;
@@ -56,11 +65,24 @@ function validateConfig(config: unknown): Config {
 
 export async function loadConfig(configPath: string): Promise<Config> {
   const absolutePath = path.resolve(configPath);
+  const configDir = path.dirname(absolutePath);
 
   try {
     const content = await fs.readFile(absolutePath, "utf-8");
     const parsedConfig = JSON.parse(content);
-    return validateConfig(parsedConfig);
+    const validatedConfig = validateConfig(parsedConfig);
+    
+    // Convert relative paths to absolute paths
+    validatedConfig.outputdir = path.resolve(configDir, validatedConfig.outputdir);
+    
+    for (const key in validatedConfig.commands) {
+      validatedConfig.commands[key].workdir = path.resolve(
+        configDir, 
+        validatedConfig.commands[key].workdir
+      );
+    }
+    
+    return validatedConfig;
   } catch (error) {
     if (
       error &&

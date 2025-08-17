@@ -6,6 +6,7 @@ import { createLogPaths } from "../logger/LogWriter.ts";
 
 export interface ExecutionRequest {
   key: string;
+  additionalArgs?: string[];
 }
 
 export interface ExecutionResult {
@@ -27,12 +28,17 @@ function executeCommand(
   command: string,
   workdir: string,
   logPaths: { outputPath: string; errorPath: string },
+  additionalArgs?: string[],
 ): Promise<ExecutionResult> {
   return new Promise((resolve, reject) => {
     const isWindows = process.platform === "win32";
     const shell = isWindows ? "cmd.exe" : "/bin/sh";
 
-    const redirectCommand = `${command} > "${logPaths.outputPath}" 2> "${logPaths.errorPath}"`;
+    const fullCommand =
+      additionalArgs && additionalArgs.length > 0
+        ? `${command} ${additionalArgs.map((arg) => `"${arg.replace(/"/g, '\\"')}"`).join(" ")}`
+        : command;
+    const redirectCommand = `${fullCommand} > "${logPaths.outputPath}" 2> "${logPaths.errorPath}"`;
     const shellArgs = isWindows
       ? ["/c", redirectCommand]
       : ["-c", redirectCommand];
@@ -62,11 +68,15 @@ export async function execute(
   request: ExecutionRequest,
   config: Config,
 ): Promise<ExecutionResult> {
-  const { key } = request;
+  const { key, additionalArgs } = request;
   const command = config.commands[key];
 
   if (!command) {
     throw new Error(`Unknown command key: ${key}`);
+  }
+
+  if (additionalArgs && additionalArgs.length > 0 && !command.additionalArgs) {
+    throw new Error(`Additional arguments are not allowed for command: ${key}`);
   }
 
   await validateWorkdir(command.workdir);
@@ -76,5 +86,10 @@ export async function execute(
   const outputDir = path.dirname(logPaths.outputPath);
   await fs.mkdir(outputDir, { recursive: true });
 
-  return executeCommand(command.command, command.workdir, logPaths);
+  return executeCommand(
+    command.command,
+    command.workdir,
+    logPaths,
+    additionalArgs,
+  );
 }
