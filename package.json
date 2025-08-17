@@ -1,6 +1,6 @@
 {
   "name": "long-run-command-mcp",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "MCP server for executing predefined long-running commands with output logging",
   "main": "dist/long-run-command-mcp.js",
   "bin": {
@@ -11,6 +11,7 @@
     "clean": "rm -rf dist && rm tsconfig.tsbuildinfo",
     "debug": "npx @modelcontextprotocol/inspector tsx src/long-run-command-mcp.ts -c config.example.json",
     "debug:released": "npx @modelcontextprotocol/inspector npx -y long-run-command-mcp@latest -c config.example.json",
+    "debug:version": "npx @modelcontextprotocol/inspector npx -y long-run-command-mcp@0.2.0 -c config.example.json",
     "lint": "npx biome check --write ./src",
     "check": "npm run check:lint && npm run check:type",
     "check:lint": "npx biome check ./src",
