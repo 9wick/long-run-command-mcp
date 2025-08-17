@@ -38,8 +38,9 @@ export class CommandExecutor {
       });
 
       // ストリームをログファイルに書き込み
+      let writePromise: Promise<void> | undefined;
       if (childProcess.stdout && childProcess.stderr) {
-        this.logWriter
+        writePromise = this.logWriter
           .writeStreams(childProcess.stdout, childProcess.stderr, logPaths)
           .catch(reject);
       }
@@ -48,7 +49,17 @@ export class CommandExecutor {
         reject(new Error(`Command execution failed: ${error.message}`));
       });
 
-      childProcess.on("exit", (code) => {
+      childProcess.on("exit", async (code) => {
+        // ストリームの書き込み完了を待つ
+        if (writePromise) {
+          try {
+            await writePromise;
+          } catch (error) {
+            // エラーは既に reject で処理されている
+            return;
+          }
+        }
+        
         resolve({
           outputPath: logPaths.outputPath,
           errorPath: logPaths.errorPath,
