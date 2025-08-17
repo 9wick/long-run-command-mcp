@@ -44,8 +44,6 @@ export class CommandExecutor {
         ? ["/c", redirectCommand]
         : ["-c", redirectCommand];
 
-      console.log(`[DEBUG] Executing with redirect: ${redirectCommand}`);
-
       const childProcess = spawn(shell, shellArgs, {
         cwd: absoluteWorkdir,
         stdio: "inherit", // 親プロセスのstdioを継承（ただし、リダイレクトされる）
