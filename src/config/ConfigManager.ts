@@ -71,17 +71,20 @@ export async function loadConfig(configPath: string): Promise<Config> {
     const content = await fs.readFile(absolutePath, "utf-8");
     const parsedConfig = JSON.parse(content);
     const validatedConfig = validateConfig(parsedConfig);
-    
+
     // Convert relative paths to absolute paths
-    validatedConfig.outputdir = path.resolve(configDir, validatedConfig.outputdir);
-    
+    validatedConfig.outputdir = path.resolve(
+      configDir,
+      validatedConfig.outputdir,
+    );
+
     for (const key in validatedConfig.commands) {
       validatedConfig.commands[key].workdir = path.resolve(
-        configDir, 
-        validatedConfig.commands[key].workdir
+        configDir,
+        validatedConfig.commands[key].workdir,
       );
     }
-    
+
     return validatedConfig;
   } catch (error) {
     if (
