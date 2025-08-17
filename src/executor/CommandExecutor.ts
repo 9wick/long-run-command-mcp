@@ -28,27 +28,35 @@ export class CommandExecutor {
     // ログパスの生成
     const logPaths = this.logWriter.createLogPaths(key);
 
+    // 出力ディレクトリを作成
+    const outputDir = path.dirname(logPaths.outputPath);
+    await fs.mkdir(outputDir, { recursive: true });
+
     // コマンド実行
     return new Promise((resolve, reject) => {
-      const [cmd, ...args] = command.command.split(" ");
+      // シェルのリダイレクトを使用してファイルに直接出力
+      const isWindows = process.platform === "win32";
+      const shell = isWindows ? "cmd.exe" : "/bin/sh";
 
-      const childProcess = spawn(cmd, args, {
+      // コマンドにリダイレクトを追加
+      const redirectCommand = `${command.command} > "${logPaths.outputPath}" 2> "${logPaths.errorPath}"`;
+      const shellArgs = isWindows
+        ? ["/c", redirectCommand]
+        : ["-c", redirectCommand];
+
+      const childProcess = spawn(shell, shellArgs, {
         cwd: absoluteWorkdir,
-        shell: true,
+        stdio: "inherit", // 親プロセスのstdioを継承（ただし、リダイレクトされる）
       });
-
-      // ストリームをログファイルに書き込み
-      if (childProcess.stdout && childProcess.stderr) {
-        this.logWriter
-          .writeStreams(childProcess.stdout, childProcess.stderr, logPaths)
-          .catch(reject);
-      }
 
       childProcess.on("error", (error) => {
         reject(new Error(`Command execution failed: ${error.message}`));
       });
 
-      childProcess.on("exit", (code) => {
+      childProcess.on("exit", async (code) => {
+        // ファイルが確実に書き込まれるまで少し待機
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
         resolve({
           outputPath: logPaths.outputPath,
           errorPath: logPaths.errorPath,

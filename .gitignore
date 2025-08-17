@@ -36,3 +36,5 @@ coverage/
 *.tsbuildinfo
 /.task/
 
+/.claude/settings.local.json
+/config.json

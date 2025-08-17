@@ -5,19 +5,16 @@ An MCP (Model Context Protocol) server that executes predefined long-running com
 ## Overview
 
 This MCP server allows you to:
-- Execute predefined commands using simple key identifiers
+- Execute predefined commands through dynamically generated tools
+- Each command in your configuration becomes a separate tool
 - Capture stdout and stderr to separate log files
 - Monitor long-running processes
-- List available commands
 
 ## Quick Start
 
 ```bash
 # Install from npm (when published)
-claude mcp add long-run-command-mcp npx -- -y long-run-command-mcp
-
-# Or install directly from GitHub
-claude mcp add long-run-command-mcp npx -- -y 9wick/long-run-command-mcp
+claude mcp add long-run-command-mcp npx -- -y long-run-command-mcp --config /path/to/your/config.json
 ```
 
 ## Configuration
@@ -72,55 +69,61 @@ Create a `config.json` file to define your commands:
   - `workdir`: Working directory for command execution (absolute path)
   - `command`: The actual command to execute
 
-## Available Tools
+## How It Works
 
-### execute_command
+This server dynamically generates tools based on your configuration. Each command in your `config.json` becomes an individual MCP tool that Claude can use.
 
-Executes a predefined command by its key.
+### Tool Generation
 
-**Parameters:**
-- `key` (string): The command key defined in config.json
+- **Tool Name Format:** `run_<command_key>`
+- **Special Characters:** Replaced with underscores (e.g., `build:prod` → `run_build_prod`)
+- **Tool Description:** Includes the command and working directory
+- **Parameters:** None required - each tool executes its predefined command
 
-**Returns:**
+### Tool Response Format
+
+All generated tools return the same response structure:
+
 ```json
 {
   "success": true,
-  "outputPath": "/var/log/mcp-commands/1705397123-build_frontend-output.log",
-  "errorPath": "/var/log/mcp-commands/1705397123-build_frontend-error.log",
+  "command": "npm run build",
+  "workdir": "/home/user/project/frontend",
+  "outputPath": "/path/to/logs/timestamp-commandkey-output.log",
+  "errorPath": "/path/to/logs/timestamp-commandkey-error.log",
   "exitCode": 0
 }
 ```
 
-### list_commands
+### Example
 
-Lists all available command keys.
-
-**Returns:**
-```json
-{
-  "availableCommands": ["build_frontend", "test_backend", "deploy_staging"]
-}
-```
+With the configuration shown above, you would get these tools:
+- `run_build_frontend` - Executes `npm run build` in `/home/user/project/frontend`
+- `run_test_backend` - Executes `pytest tests/` in `/home/user/project/backend`
+- `run_deploy_staging` - Executes `./scripts/deploy.sh staging` in `/home/user/project`
 
 ## Example Usage
 
 Here's how to use this MCP server with Claude:
 
-1. **List available commands:**
-   ```
-   "I need to see what commands are available"
-   ```
-   Claude will use `list_commands` to show you all configured commands.
+1. **View available tools:**
+   When Claude connects to the server, it automatically discovers all available tools based on your configuration. Each command appears as a separate tool.
 
 2. **Execute a command:**
    ```
-   "Run the build_frontend command"
+   "Run the frontend build"
    ```
-   Claude will execute the command and provide you with the log file paths.
+   Claude will use the `run_build_frontend` tool to execute the command and provide you with the log file paths.
 
-3. **Check command output:**
+3. **Run multiple commands:**
    ```
-   "Show me the output from the build_frontend command"
+   "Build the frontend and then run the backend tests"
+   ```
+   Claude can execute `run_build_frontend` followed by `run_test_backend`.
+
+4. **Check command output:**
+   ```
+   "Show me the output from the build"
    ```
    Claude can read the log files to show you the command results.
 
@@ -170,15 +173,15 @@ npm run lint
 ```bash
 # Build and run with default config
 npm run build
-node dist/index.js
+node dist/long-run-command-mcp.js
 
 # Run with custom config
-node dist/index.js --config /path/to/config.json
+node dist/long-run-command-mcp.js --config /path/to/config.json
 # or short form
-node dist/index.js -c /path/to/config.json
+node dist/long-run-command-mcp.js -c /path/to/config.json
 
 # Development mode with custom config
-npm run build && node dist/index.js --config ./config.json
+npm run build && node dist/long-run-command-mcp.js --config ./config.json
 ```
 
 ## Contributing
