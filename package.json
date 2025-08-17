@@ -10,7 +10,7 @@
     "build": "tsc",
     "clean": "rm -rf dist && rm tsconfig.tsbuildinfo",
     "debug": "npx @modelcontextprotocol/inspector tsx src/long-run-command-mcp.ts -c config.example.json",
-    "debug:released": "npx @modelcontextprotocol/inspector npx long-run-command-mcp@latest -c config.example.json",
+    "debug:released": "npx @modelcontextprotocol/inspector npx -y long-run-command-mcp@latest -c config.example.json",
     "lint": "npx biome check --write ./src",
     "check": "tsx watch src/server.ts",
     "check:lint": "npx biome check ./src",
