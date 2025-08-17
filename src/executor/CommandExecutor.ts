@@ -30,10 +30,16 @@ export class CommandExecutor {
 
     // コマンド実行
     return new Promise((resolve, reject) => {
-      // shell: true の場合、コマンド全体を単一の文字列として渡す
-      const childProcess = spawn(command.command, [], {
+      // プラットフォームに応じてシェルを明示的に指定
+      const isWindows = process.platform === "win32";
+      const shell = isWindows ? "cmd.exe" : "/bin/sh";
+      const shellArgs = isWindows
+        ? ["/c", command.command]
+        : ["-c", command.command];
+
+      const childProcess = spawn(shell, shellArgs, {
         cwd: absoluteWorkdir,
-        shell: true,
+        stdio: "pipe",
       });
 
       // ストリームをログファイルに書き込み
