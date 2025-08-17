@@ -1,14 +1,11 @@
 #!/usr/bin/env node
 
-import { CommandExecutionServer } from "./server";
+import { startServer } from "./server";
 
-// 副作用: あり（プロセス起動）
-async function main(): Promise<void> {
-  // コマンドライン引数から設定ファイルパスを取得
+function parseArgs(): string {
   const args = process.argv.slice(2);
   let configPath = "./config.json";
 
-  // --config または -c オプションをパース
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--config" || args[i] === "-c") {
       if (i + 1 < args.length) {
@@ -18,20 +15,23 @@ async function main(): Promise<void> {
     }
   }
 
-  const server = new CommandExecutionServer(configPath);
+  return configPath;
+}
 
-  await server.start();
+async function main(): Promise<void> {
+  const configPath = parseArgs();
+  const stopServer = await startServer(configPath);
+  let stopping = false;
 
-  // グレースフルシャットダウン
-  process.on("SIGINT", async () => {
-    await server.stop();
+  const shutdown = async () => {
+    if (stopping) return;
+    stopping = true;
+    await stopServer();
     process.exit(0);
-  });
+  };
 
-  process.on("SIGTERM", async () => {
-    await server.stop();
-    process.exit(0);
-  });
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
 
 main().catch((error) => {

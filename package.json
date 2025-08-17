@@ -12,7 +12,7 @@
     "debug": "npx @modelcontextprotocol/inspector tsx src/long-run-command-mcp.ts -c config.example.json",
     "debug:released": "npx @modelcontextprotocol/inspector npx -y long-run-command-mcp@latest -c config.example.json",
     "lint": "npx biome check --write ./src",
-    "check": "tsx watch src/server.ts",
+    "check": "npm run check:lint && npm run check:type",
     "check:lint": "npx biome check ./src",
     "check:type": "tsc --noEmit",
     "test": "vitest run --config ./vitest.config.ts",

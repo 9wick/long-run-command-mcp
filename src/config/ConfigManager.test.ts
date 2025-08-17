@@ -1,23 +1,17 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ConfigManager } from "./ConfigManager";
+import type { Config } from "./ConfigManager";
+import {
+  getAvailableKeys,
+  getCommand,
+  getOutputDir,
+  loadConfig,
+} from "./ConfigManager";
 
 describe("ConfigManager", () => {
-  describe("constructor", () => {
-    it("should create an instance", () => {
-      const configManager = new ConfigManager();
-      expect(configManager).toBeInstanceOf(ConfigManager);
-    });
-  });
-
   describe("loadConfig", () => {
-    let configManager: ConfigManager;
     const testConfigPath = path.join(__dirname, "test-config.json");
-
-    beforeEach(() => {
-      configManager = new ConfigManager();
-    });
 
     afterEach(async () => {
       try {
@@ -39,9 +33,8 @@ describe("ConfigManager", () => {
       };
 
       await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
-      await expect(
-        configManager.loadConfig(testConfigPath),
-      ).resolves.not.toThrow();
+      const config = await loadConfig(testConfigPath);
+      expect(config).toEqual(testConfig);
     });
 
     it("should throw error when outputdir is missing", async () => {
@@ -55,7 +48,7 @@ describe("ConfigManager", () => {
       };
 
       await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
-      await expect(configManager.loadConfig(testConfigPath)).rejects.toThrow(
+      await expect(loadConfig(testConfigPath)).rejects.toThrow(
         "Config validation error: outputdir is required and must be a string",
       );
     });
@@ -66,7 +59,7 @@ describe("ConfigManager", () => {
       };
 
       await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
-      await expect(configManager.loadConfig(testConfigPath)).rejects.toThrow(
+      await expect(loadConfig(testConfigPath)).rejects.toThrow(
         "Config validation error: commands is required and must be an object",
       );
     });
@@ -82,7 +75,7 @@ describe("ConfigManager", () => {
       };
 
       await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
-      await expect(configManager.loadConfig(testConfigPath)).rejects.toThrow(
+      await expect(loadConfig(testConfigPath)).rejects.toThrow(
         "Config validation error: commands.test.workdir is required and must be a string",
       );
     });
@@ -98,41 +91,25 @@ describe("ConfigManager", () => {
       };
 
       await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
-      await expect(configManager.loadConfig(testConfigPath)).rejects.toThrow(
+      await expect(loadConfig(testConfigPath)).rejects.toThrow(
         "Config validation error: commands.test.command is required and must be a string",
       );
     });
   });
 
   describe("getCommand", () => {
-    let configManager: ConfigManager;
-    const testConfigPath = path.join(__dirname, "test-config.json");
-
-    beforeEach(async () => {
-      configManager = new ConfigManager();
-      const testConfig = {
-        outputdir: "./output",
-        commands: {
-          test: {
-            workdir: "./",
-            command: "echo test",
-          },
+    const testConfig: Config = {
+      outputdir: "./output",
+      commands: {
+        test: {
+          workdir: "./",
+          command: "echo test",
         },
-      };
-      await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
-      await configManager.loadConfig(testConfigPath);
-    });
-
-    afterEach(async () => {
-      try {
-        await fs.unlink(testConfigPath);
-      } catch (_error) {
-        // ファイルが存在しない場合は無視
-      }
-    });
+      },
+    };
 
     it("should return command config for existing key", () => {
-      const command = configManager.getCommand("test");
+      const command = getCommand(testConfig, "test");
       expect(command).toEqual({
         workdir: "./",
         command: "echo test",
@@ -140,100 +117,47 @@ describe("ConfigManager", () => {
     });
 
     it("should throw error for non-existing key", () => {
-      expect(() => configManager.getCommand("nonexistent")).toThrow(
+      expect(() => getCommand(testConfig, "nonexistent")).toThrow(
         "Command not found: nonexistent",
-      );
-    });
-
-    it("should throw error when config is not loaded", () => {
-      const newConfigManager = new ConfigManager();
-      expect(() => newConfigManager.getCommand("test")).toThrow(
-        "Config not loaded",
       );
     });
   });
 
   describe("getOutputDir", () => {
-    let configManager: ConfigManager;
-    const testConfigPath = path.join(__dirname, "test-config.json");
-
-    beforeEach(async () => {
-      configManager = new ConfigManager();
-      const testConfig = {
-        outputdir: "./output",
-        commands: {
-          test: {
-            workdir: "./",
-            command: "echo test",
-          },
+    const testConfig: Config = {
+      outputdir: "./output",
+      commands: {
+        test: {
+          workdir: "./",
+          command: "echo test",
         },
-      };
-      await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
-      await configManager.loadConfig(testConfigPath);
-    });
-
-    afterEach(async () => {
-      try {
-        await fs.unlink(testConfigPath);
-      } catch (_error) {
-        // ファイルが存在しない場合は無視
-      }
-    });
+      },
+    };
 
     it("should return output directory", () => {
-      const outputDir = configManager.getOutputDir();
+      const outputDir = getOutputDir(testConfig);
       expect(outputDir).toBe("./output");
-    });
-
-    it("should throw error when config is not loaded", () => {
-      const newConfigManager = new ConfigManager();
-      expect(() => newConfigManager.getOutputDir()).toThrow(
-        "Config not loaded",
-      );
     });
   });
 
   describe("getAvailableKeys", () => {
-    let configManager: ConfigManager;
-    const testConfigPath = path.join(__dirname, "test-config.json");
-
-    beforeEach(async () => {
-      configManager = new ConfigManager();
-      const testConfig = {
-        outputdir: "./output",
-        commands: {
-          test: {
-            workdir: "./",
-            command: "echo test",
-          },
-          build: {
-            workdir: "./",
-            command: "npm build",
-          },
+    const testConfig: Config = {
+      outputdir: "./output",
+      commands: {
+        test: {
+          workdir: "./",
+          command: "echo test",
         },
-      };
-      await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
-      await configManager.loadConfig(testConfigPath);
-    });
-
-    afterEach(async () => {
-      try {
-        await fs.unlink(testConfigPath);
-      } catch (_error) {
-        // ファイルが存在しない場合は無視
-      }
-    });
+        build: {
+          workdir: "./",
+          command: "npm build",
+        },
+      },
+    };
 
     it("should return available command keys", () => {
-      const keys = configManager.getAvailableKeys();
+      const keys = getAvailableKeys(testConfig);
       expect(keys).toEqual(["test", "build"]);
-    });
-
-    it("should throw error when config is not loaded", () => {
-      const newConfigManager = new ConfigManager();
-      expect(() => newConfigManager.getAvailableKeys()).toThrow(
-        "Config not loaded",
-      );
     });
   });
 });
