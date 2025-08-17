@@ -32,14 +32,22 @@ describe("LogWriter", () => {
       expect(outputTimestamp).toBe(errorTimestamp);
     });
 
-    it("should generate different timestamps for different calls", async () => {
+    it("should generate different timestamps for different calls", () => {
       const outputDir = "./output";
+      const spy = vi
+        .spyOn(Date, "now")
+        .mockReturnValueOnce(1000)
+        .mockReturnValueOnce(1001);
+
       const paths1 = createLogPaths("test1", outputDir);
-      await new Promise((resolve) => setTimeout(resolve, 5)); // 少し待つ
       const paths2 = createLogPaths("test2", outputDir);
+
+      spy.mockRestore();
 
       expect(paths1.outputPath).not.toBe(paths2.outputPath);
       expect(paths1.errorPath).not.toBe(paths2.errorPath);
+      expect(paths1.outputPath).toMatch(/1000-test1-output\.log$/);
+      expect(paths2.outputPath).toMatch(/1001-test2-output\.log$/);
     });
 
     describe("key sanitization", () => {

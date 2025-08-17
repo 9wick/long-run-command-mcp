@@ -21,16 +21,17 @@ function parseArgs(): string {
 async function main(): Promise<void> {
   const configPath = parseArgs();
   const stopServer = await startServer(configPath);
+  let stopping = false;
 
-  process.on("SIGINT", async () => {
+  const shutdown = async () => {
+    if (stopping) return;
+    stopping = true;
     await stopServer();
     process.exit(0);
-  });
+  };
 
-  process.on("SIGTERM", async () => {
-    await stopServer();
-    process.exit(0);
-  });
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
 
 main().catch((error) => {

@@ -63,8 +63,13 @@ export async function writeStreams(
   stderr: Readable,
   paths: LogPaths,
 ): Promise<void> {
-  const outputDir = path.dirname(paths.outputPath);
-  await fs.mkdir(outputDir, { recursive: true });
+  const dirs = new Set([
+    path.dirname(paths.outputPath),
+    path.dirname(paths.errorPath),
+  ]);
+  await Promise.all(
+    Array.from(dirs).map((d) => fs.mkdir(d, { recursive: true })),
+  );
 
   const outputWrite = createWriteStream(paths.outputPath);
   const errorWrite = createWriteStream(paths.errorPath);
