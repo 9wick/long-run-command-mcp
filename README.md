@@ -5,10 +5,10 @@ An MCP (Model Context Protocol) server that executes predefined long-running com
 ## Overview
 
 This MCP server allows you to:
-- Execute predefined commands using simple key identifiers
+- Execute predefined commands through dynamically generated tools
+- Each command in your configuration becomes a separate tool
 - Capture stdout and stderr to separate log files
 - Monitor long-running processes
-- List available commands
 
 ## Quick Start
 
@@ -72,45 +72,36 @@ Create a `config.json` file to define your commands:
   - `workdir`: Working directory for command execution (absolute path)
   - `command`: The actual command to execute
 
-## Available Tools
+## How It Works
 
-This server dynamically generates tools based on your configuration. Each command in your `config.json` becomes an individual tool.
+This server dynamically generates tools based on your configuration. Each command in your `config.json` becomes an individual MCP tool that Claude can use.
 
-For the example configuration above, the following tools would be available:
+### Tool Generation
 
-### run_build_frontend
+- **Tool Name Format:** `run_<command_key>`
+- **Special Characters:** Replaced with underscores (e.g., `build:prod` → `run_build_prod`)
+- **Tool Description:** Includes the command and working directory
+- **Parameters:** None required - each tool executes its predefined command
 
-Executes the build_frontend command: `npm run build` (workdir: /home/user/project/frontend)
+### Tool Response Format
 
-**Parameters:** None
+All generated tools return the same response structure:
 
-**Returns:**
 ```json
 {
   "success": true,
-  "outputPath": "/var/log/mcp-commands/1705397123-build_frontend-output.log",
-  "errorPath": "/var/log/mcp-commands/1705397123-build_frontend-error.log",
+  "outputPath": "/path/to/logs/timestamp-commandkey-output.log",
+  "errorPath": "/path/to/logs/timestamp-commandkey-error.log",
   "exitCode": 0
 }
 ```
 
-### run_test_backend
+### Example
 
-Executes the test_backend command: `pytest tests/` (workdir: /home/user/project/backend)
-
-**Parameters:** None
-
-**Returns:** Same format as above
-
-### run_deploy_staging
-
-Executes the deploy_staging command: `./scripts/deploy.sh staging` (workdir: /home/user/project)
-
-**Parameters:** None
-
-**Returns:** Same format as above
-
-**Note:** Tool names are generated as `run_<command_key>`. Special characters in command keys are replaced with underscores.
+With the configuration shown above, you would get these tools:
+- `run_build_frontend` - Executes `npm run build` in `/home/user/project/frontend`
+- `run_test_backend` - Executes `pytest tests/` in `/home/user/project/backend`
+- `run_deploy_staging` - Executes `./scripts/deploy.sh staging` in `/home/user/project`
 
 ## Example Usage
 
