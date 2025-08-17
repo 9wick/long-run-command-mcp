@@ -41,6 +41,7 @@ export class CommandExecutionServer {
         },
         async () => {
           try {
+            const command = this.configManager.getCommand(key);
             const result = await this.executor.execute({ key });
 
             return {
@@ -50,6 +51,8 @@ export class CommandExecutionServer {
                   text: JSON.stringify(
                     {
                       success: true,
+                      command: command.command,
+                      workdir: command.workdir,
                       outputPath: result.outputPath,
                       errorPath: result.errorPath,
                       exitCode: result.exitCode,

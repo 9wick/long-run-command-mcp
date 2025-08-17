@@ -131,6 +131,8 @@ describe("CommandExecutionServer", () => {
       const parsed = JSON.parse(text);
       expect(parsed).toEqual({
         success: true,
+        command: "npm run build",
+        workdir: "/build",
         outputPath: "/tmp/out.log",
         errorPath: "/tmp/err.log",
         exitCode: 0,

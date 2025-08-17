@@ -90,6 +90,8 @@ All generated tools return the same response structure:
 ```json
 {
   "success": true,
+  "command": "npm run build",
+  "workdir": "/home/user/project/frontend",
   "outputPath": "/path/to/logs/timestamp-commandkey-output.log",
   "errorPath": "/path/to/logs/timestamp-commandkey-error.log",
   "exitCode": 0
