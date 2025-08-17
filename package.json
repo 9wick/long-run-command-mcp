@@ -1,6 +1,6 @@
 {
   "name": "long-run-command-mcp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "MCP server for executing predefined long-running commands with output logging",
   "main": "./dist/long-run-command-mcp.js",
   "bin": {
