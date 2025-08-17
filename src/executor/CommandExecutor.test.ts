@@ -37,6 +37,8 @@ describe("CommandExecutor", () => {
     it("should execute simple command successfully", async () => {
       const testOutputDir = path.join(__dirname, "test-output");
 
+      console.log('[TEST] Test output directory:', testOutputDir);
+
       // テスト用の出力ディレクトリを作成
       await fs.mkdir(testOutputDir, { recursive: true });
 
@@ -47,6 +49,7 @@ describe("CommandExecutor", () => {
         command: 'echo "test output"',
       });
 
+      console.log('[TEST] Executing command...');
       const result = await executor.execute({ key: "test" });
 
       // 結果の確認

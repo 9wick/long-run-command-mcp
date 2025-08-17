@@ -25,17 +25,39 @@ export class LogWriter {
     stderr: Readable,
     paths: LogPaths,
   ): Promise<void> {
+    console.log('[DEBUG] writeStreams called with paths:', paths);
+    
     // 出力ディレクトリの作成
     const outputDir = path.dirname(paths.outputPath);
+    console.log('[DEBUG] Creating directory:', outputDir);
     await fs.mkdir(outputDir, { recursive: true });
 
     // ストリームをファイルに書き込み
+    console.log('[DEBUG] Creating write streams');
     const outputWrite = createWriteStream(paths.outputPath);
     const errorWrite = createWriteStream(paths.errorPath);
 
+    // ストリームにデータがあるかチェック
+    let hasData = false;
+    stdout.once('data', () => {
+      console.log('[DEBUG] stdout has data');
+      hasData = true;
+    });
+    stderr.once('data', () => {
+      console.log('[DEBUG] stderr has data');
+      hasData = true;
+    });
+
+    console.log('[DEBUG] Starting pipeline');
     await Promise.all([
-      pipeline(stdout, outputWrite),
-      pipeline(stderr, errorWrite),
+      pipeline(stdout, outputWrite).then(() => console.log('[DEBUG] stdout pipeline complete')),
+      pipeline(stderr, errorWrite).then(() => console.log('[DEBUG] stderr pipeline complete')),
     ]);
+    
+    console.log('[DEBUG] All pipelines complete, hasData:', hasData);
+    
+    // ファイルの存在とサイズを確認
+    const stats = await fs.stat(paths.outputPath);
+    console.log('[DEBUG] Output file size:', stats.size);
   }
 }
