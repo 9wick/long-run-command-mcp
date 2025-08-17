@@ -14,7 +14,10 @@
       "Bash(npm run lint:*)",
       "Bash(npm run build:*)",
       "Bash(ls:*)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

@@ -7,7 +7,7 @@ async function main(): Promise<void> {
   // コマンドライン引数から設定ファイルパスを取得
   const args = process.argv.slice(2);
   let configPath = "./config.json";
-  
+
   // --config または -c オプションをパース
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--config" || args[i] === "-c") {
@@ -17,7 +17,7 @@ async function main(): Promise<void> {
       }
     }
   }
-  
+
   const server = new CommandExecutionServer(configPath);
 
   await server.start();
