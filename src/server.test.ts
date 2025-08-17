@@ -48,13 +48,13 @@ describe("CommandExecutionServer", () => {
       // 各コマンドに対してツールが登録されたことを確認
       expect(toolSpy).toHaveBeenCalledWith(
         "run_test_command",
-        "Execute test_command command: npm test",
+        "Execute test_command command: npm test (workdir: /test)",
         {},
         expect.any(Function),
       );
       expect(toolSpy).toHaveBeenCalledWith(
         "run_build",
-        "Execute build command: npm run build",
+        "Execute build command: npm run build (workdir: /build)",
         {},
         expect.any(Function),
       );

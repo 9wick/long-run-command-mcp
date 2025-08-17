@@ -32,7 +32,7 @@ export class CommandExecutionServer {
       // コマンドごとに個別のツールを作成
       this.mcpServer.tool(
         `run_${key}`,
-        `Execute ${key} command: ${command.command}`,
+        `Execute ${key} command: ${command.command} (workdir: ${command.workdir})`,
         {},
         async () => {
           try {
