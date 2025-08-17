@@ -5,11 +5,12 @@ import { describe, expect, it } from "vitest";
 import type { Config } from "../config/ConfigManager.ts";
 import { execute } from "./CommandExecutor.ts";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 describe("CommandExecutor", () => {
   describe("execute", () => {
     it("should throw error when working directory does not exist", async () => {
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
       const nonExistentDir = path.join(__dirname, "non-existent-directory");
       const config: Config = {
         outputdir: "./output",
@@ -93,6 +94,120 @@ describe("CommandExecutor", () => {
       expect(result.exitCode).not.toBe(0);
 
       // クリーンアップ
+      await fs.rm(testOutputDir, { recursive: true }).catch(() => {});
+    });
+  });
+
+  describe("additionalArgs security", () => {
+    const testOutputDir = path.join(__dirname, "test-output-security");
+    const securityConfig: Config = {
+      outputdir: testOutputDir,
+      commands: {
+        echo_no_args: {
+          workdir: __dirname,
+          command: "echo",
+        },
+        echo_with_args: {
+          workdir: __dirname,
+          command: "echo",
+          additionalArgs: true,
+        },
+      },
+    };
+
+    it("should reject additional args when not allowed", async () => {
+      await expect(
+        execute(
+          { key: "echo_no_args", additionalArgs: ["arg1"] },
+          securityConfig,
+        ),
+      ).rejects.toThrow(
+        "Additional arguments are not allowed for command: echo_no_args",
+      );
+    });
+
+    it("should reject shell operators in additional arguments", async () => {
+      await fs.mkdir(testOutputDir, { recursive: true });
+
+      const dangerousArgs = [
+        ["test && rm -rf /"],
+        ["test | cat /etc/passwd"],
+        ["test; cat /etc/passwd"],
+        ["test > /tmp/evil"],
+        ["$(cat /etc/passwd)"],
+        ["`cat /etc/passwd`"],
+        ["$HOME"],
+        ["test\ncat /etc/passwd"],
+      ];
+
+      for (const args of dangerousArgs) {
+        await expect(
+          execute(
+            { key: "echo_with_args", additionalArgs: args },
+            securityConfig,
+          ),
+        ).rejects.toThrow("Invalid characters in additional arguments");
+      }
+
+      await fs.rm(testOutputDir, { recursive: true }).catch(() => {});
+    });
+
+    it("should allow safe additional arguments", async () => {
+      await fs.mkdir(testOutputDir, { recursive: true });
+
+      const safeArgs = [
+        ["hello"],
+        ["world"],
+        ["hello-world"],
+        ["hello_world"],
+        ["hello.world"],
+        ["123"],
+        ["/path/to/file.txt"],
+        ["--option=value"],
+        ["-f"],
+      ];
+
+      for (const args of safeArgs) {
+        const result = await execute(
+          { key: "echo_with_args", additionalArgs: args },
+          securityConfig,
+        );
+        expect(result).toHaveProperty("exitCode");
+        expect(result.exitCode).toBe(0);
+      }
+
+      await fs.rm(testOutputDir, { recursive: true }).catch(() => {});
+    });
+
+    it("should handle multiple safe arguments", async () => {
+      await fs.mkdir(testOutputDir, { recursive: true });
+
+      const result = await execute(
+        {
+          key: "echo_with_args",
+          additionalArgs: ["hello", "world", "--verbose"],
+        },
+        securityConfig,
+      );
+      expect(result).toHaveProperty("exitCode");
+      expect(result.exitCode).toBe(0);
+
+      await fs.rm(testOutputDir, { recursive: true }).catch(() => {});
+    });
+
+    it("should reject if any argument contains dangerous characters", async () => {
+      await fs.mkdir(testOutputDir, { recursive: true });
+
+      await expect(
+        execute(
+          {
+            key: "echo_with_args",
+            additionalArgs: ["safe", "test && dangerous", "also-safe"],
+          },
+          securityConfig,
+        ),
+      ).rejects.toThrow("Invalid characters in additional arguments");
+
       await fs.rm(testOutputDir, { recursive: true }).catch(() => {});
     });
   });

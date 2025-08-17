@@ -24,6 +24,24 @@ async function validateWorkdir(workdir: string): Promise<void> {
   }
 }
 
+function validateAdditionalArgs(args: string[]): void {
+  // Dangerous characters and patterns that could lead to shell injection
+  const dangerousPatterns = [
+    /[;&|<>`$]/, // Shell operators and command substitution
+    /\n|\r/, // Newlines
+    /\$\(/, // Command substitution $(...)
+    /\$\{/, // Variable expansion ${...}
+  ];
+
+  for (const arg of args) {
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(arg)) {
+        throw new Error("Invalid characters in additional arguments");
+      }
+    }
+  }
+}
+
 function executeCommand(
   command: string,
   workdir: string,
@@ -75,8 +93,13 @@ export async function execute(
     throw new Error(`Unknown command key: ${key}`);
   }
 
-  if (additionalArgs && additionalArgs.length > 0 && !command.additionalArgs) {
-    throw new Error(`Additional arguments are not allowed for command: ${key}`);
+  if (additionalArgs && additionalArgs.length > 0) {
+    if (!command.additionalArgs) {
+      throw new Error(
+        `Additional arguments are not allowed for command: ${key}`,
+      );
+    }
+    validateAdditionalArgs(additionalArgs);
   }
 
   await validateWorkdir(command.workdir);
