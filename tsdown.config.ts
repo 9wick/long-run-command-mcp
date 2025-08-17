@@ -8,7 +8,7 @@ export default defineConfig({
     format: 'esm',
     clean: true,
     sourcemap: false,
-    minify: 'dce-only',
+    minify: false,
     treeshake: true,
     dts: {
         tsgo: true,
@@ -22,8 +22,6 @@ export default defineConfig({
     },
     external: [
         '@modelcontextprotocol/sdk',
-        'dotenv',
-        'zod',
     ],
     banner: {
         js: '#!/usr/bin/env node',
