@@ -37,6 +37,9 @@ describe("CommandExecutor", () => {
     it("should execute simple command successfully", async () => {
       const testOutputDir = path.join(__dirname, "test-output");
 
+      // テスト用の出力ディレクトリを作成
+      await fs.mkdir(testOutputDir, { recursive: true });
+
       // 出力ディレクトリを返すようにモック
       vi.spyOn(configManager, "getOutputDir").mockReturnValue(testOutputDir);
       vi.spyOn(configManager, "getCommand").mockReturnValue({
@@ -68,6 +71,9 @@ describe("CommandExecutor", () => {
 
     it("should handle command execution errors", async () => {
       const testOutputDir = path.join(__dirname, "test-output");
+
+      // テスト用の出力ディレクトリを作成
+      await fs.mkdir(testOutputDir, { recursive: true });
 
       vi.spyOn(configManager, "getOutputDir").mockReturnValue(testOutputDir);
       vi.spyOn(configManager, "getCommand").mockReturnValue({
