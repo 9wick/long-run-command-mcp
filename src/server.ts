@@ -7,9 +7,7 @@ import {
   loadConfig,
 } from "./config/ConfigManager";
 import { execute } from "./executor/CommandExecutor";
-
-// バージョンは環境変数またはハードコードから取得
-const version = process.env.npm_package_version || "0.1.0";
+import packageJson from "../package.json";
 
 function createCommandTool(
   mcpServer: McpServer,
@@ -76,7 +74,7 @@ export async function startServer(
 ): Promise<() => Promise<void>> {
   const mcpServer = new McpServer({
     name: "long-run-command-mcp",
-    version,
+    version: packageJson.version,
   });
   const transport = new StdioServerTransport();
 
