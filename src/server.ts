@@ -19,17 +19,32 @@ function createCommandTool(
   const command = getCommand(config, key);
   const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, "_");
 
+  const schema = command.additionalArgs
+    ? {
+        type: "object" as const,
+        properties: {
+          additionalArgs: {
+            type: "array" as const,
+            items: { type: "string" as const },
+            description: "Additional arguments to pass to the command",
+          },
+        },
+      }
+    : {
+        type: "object" as const,
+        properties: {},
+      };
+
   mcpServer.tool(
     `run_${safeKey}`,
-    `Execute ${key} command: ${command.command} (workdir: ${command.workdir})`,
-    {
-      type: "object",
-      properties: {},
-      additionalProperties: false,
-    },
-    async () => {
+    `Execute ${key} command: ${command.command} (workdir: ${command.workdir})${command.additionalArgs ? " - supports additional arguments" : ""}`,
+    schema,
+    async (args: any) => {
       try {
-        const result = await execute({ key }, config);
+        const result = await execute(
+          { key, additionalArgs: args?.additionalArgs },
+          config,
+        );
 
         return {
           content: [

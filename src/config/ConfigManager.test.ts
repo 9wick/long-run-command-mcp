@@ -34,7 +34,15 @@ describe("ConfigManager", () => {
 
       await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
       const config = await loadConfig(testConfigPath);
-      expect(config).toEqual(testConfig);
+
+      // Check that paths are converted to absolute paths
+      expect(config.outputdir).toBe(
+        path.resolve(path.dirname(testConfigPath), "./output"),
+      );
+      expect(config.commands.test.workdir).toBe(
+        path.resolve(path.dirname(testConfigPath), "./"),
+      );
+      expect(config.commands.test.command).toBe("echo test");
     });
 
     it("should throw error when outputdir is missing", async () => {

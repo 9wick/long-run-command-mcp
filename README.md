@@ -56,6 +56,11 @@ Create a `config.json` file to define your commands:
     "deploy_staging": {
       "workdir": "/home/user/project",
       "command": "./scripts/deploy.sh staging"
+    },
+    "npm_script": {
+      "workdir": "/home/user/project",
+      "command": "npm run",
+      "additionalArgs": true
     }
   }
 }
@@ -63,11 +68,14 @@ Create a `config.json` file to define your commands:
 
 ### Configuration Options
 
-- `outputdir`: Directory where log files will be stored (absolute path recommended)
+- `outputdir`: Directory where log files will be stored (supports both relative and absolute paths)
 - `commands`: Object containing command configurations
   - Key: Command identifier used to execute the command
-  - `workdir`: Working directory for command execution (absolute path)
+  - `workdir`: Working directory for command execution (supports both relative and absolute paths)
   - `command`: The actual command to execute
+  - `additionalArgs` (optional): Boolean flag to allow passing additional arguments at runtime (default: false)
+
+**Note on Paths:** Both `outputdir` and `workdir` support relative paths. When relative paths are used, they are resolved relative to the configuration file's location.
 
 ## How It Works
 
@@ -78,7 +86,9 @@ This server dynamically generates tools based on your configuration. Each comman
 - **Tool Name Format:** `run_<command_key>`
 - **Special Characters:** Replaced with underscores (e.g., `build:prod` → `run_build_prod`)
 - **Tool Description:** Includes the command and working directory
-- **Parameters:** None required - each tool executes its predefined command
+- **Parameters:** 
+  - None required for standard commands
+  - `additionalArgs` (string array): Available when `additionalArgs: true` is set in the command configuration
 
 ### Tool Response Format
 
@@ -101,6 +111,7 @@ With the configuration shown above, you would get these tools:
 - `run_build_frontend` - Executes `npm run build` in `/home/user/project/frontend`
 - `run_test_backend` - Executes `pytest tests/` in `/home/user/project/backend`
 - `run_deploy_staging` - Executes `./scripts/deploy.sh staging` in `/home/user/project`
+- `run_npm_script` - Executes `npm run` with additional arguments in `/home/user/project`
 
 ## Example Usage
 
@@ -121,7 +132,13 @@ Here's how to use this MCP server with Claude:
    ```
    Claude can execute `run_build_frontend` followed by `run_test_backend`.
 
-4. **Check command output:**
+4. **Execute commands with additional arguments:**
+   ```
+   "Run the npm dev script"
+   ```
+   Claude will use the `run_npm_script` tool with `additionalArgs: ["dev"]` to execute `npm run dev`.
+
+5. **Check command output:**
    ```
    "Show me the output from the build"
    ```
