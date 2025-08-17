@@ -1,14 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as ConfigManager from "./config/ConfigManager";
-import * as CommandExecutor from "./executor/CommandExecutor";
-import { startServer } from "./server";
+import * as ConfigManager from "./config/ConfigManager.ts";
+import * as CommandExecutor from "./executor/CommandExecutor.ts";
+import { startServer } from "./server.ts";
 
 vi.mock("@modelcontextprotocol/sdk/server/mcp.js");
 vi.mock("@modelcontextprotocol/sdk/server/stdio.js");
-vi.mock("./config/ConfigManager");
-vi.mock("./executor/CommandExecutor");
+vi.mock("./config/ConfigManager.ts");
+vi.mock("./executor/CommandExecutor.ts");
 
 describe("startServer", () => {
   let mockMcpServer: any;

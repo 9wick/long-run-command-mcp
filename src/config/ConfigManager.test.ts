@@ -1,13 +1,13 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { Config } from "./ConfigManager";
+import type { Config } from "./ConfigManager.ts";
 import {
   getAvailableKeys,
   getCommand,
   getOutputDir,
   loadConfig,
-} from "./ConfigManager";
+} from "./ConfigManager.ts";
 
 describe("ConfigManager", () => {
   describe("loadConfig", () => {

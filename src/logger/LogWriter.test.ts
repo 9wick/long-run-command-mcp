@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { Readable } from "node:stream";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createLogPaths, writeStreams } from "./LogWriter";
+import { createLogPaths, writeStreams } from "./LogWriter.ts";
 
 describe("LogWriter", () => {
   describe("createLogPaths", () => {
