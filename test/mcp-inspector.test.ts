@@ -88,4 +88,160 @@ describe("MCP Inspector CLI Schema Test", () => {
       });
     });
   }, 10000);
+
+  it("should execute tool with additional arguments", async () => {
+    const configPath = join(__dirname, "fixtures", "test-config.json");
+    const serverPath = join(__dirname, "..", "src", "long-run-command-mcp.ts");
+
+    return new Promise<void>((resolve, reject) => {
+      let output = "";
+
+      const args = [
+        "@modelcontextprotocol/inspector",
+        "--cli",
+        "npx",
+        "tsx",
+        serverPath,
+        "-c",
+        configPath,
+        "--method",
+        "tools/call",
+        "--tool-name",
+        "run_echo_with_args",
+        "--tool-arg",
+        "args=[\"hello\",\"world\",\"test\"]"
+      ];
+      console.log("Running tool call with npx " + args.join(" "));
+
+      // Run MCP Inspector to call the tool
+      inspectorProcess = spawn("npx", args, {
+        stdio: ["pipe", "pipe", "pipe"],
+        cwd: join(__dirname, "..")
+      });
+
+      inspectorProcess.stdout?.on("data", (data) => {
+        output += data.toString();
+      });
+
+      inspectorProcess.stderr?.on("data", (data) => {
+        console.error("Inspector stderr:", data.toString());
+      });
+
+      inspectorProcess.on("error", reject);
+
+      inspectorProcess.on("close", (code) => {
+        console.log("Process exited with code:", code);
+        console.log("Output received:", output);
+
+        if (code !== 0) {
+          reject(new Error(`Inspector exited with code ${code}`));
+          return;
+        }
+
+        // Parse the output
+        try {
+          const result = JSON.parse(output);
+          console.log("Tool call result:", JSON.stringify(result, null, 2));
+
+          // Check the result
+          expect(result).toBeDefined();
+          expect(result.content).toBeDefined();
+          expect(Array.isArray(result.content)).toBe(true);
+          
+          // Parse the text content
+          const textContent = result.content[0];
+          expect(textContent.type).toBe("text");
+          const executionResult = JSON.parse(textContent.text);
+          
+          expect(executionResult.success).toBe(true);
+          expect(executionResult.command).toBe("echo");
+          expect(executionResult.outputPath).toBeDefined();
+          expect(executionResult.errorPath).toBeDefined();
+          expect(executionResult.exitCode).toBe(0);
+
+          resolve();
+        } catch (e) {
+          console.error("Failed to parse output:", e);
+          reject(new Error("Failed to parse tool call result"));
+        }
+      });
+    });
+  }, 10000);
+
+  it("should execute tool without additional arguments", async () => {
+    const configPath = join(__dirname, "fixtures", "test-config.json");
+    const serverPath = join(__dirname, "..", "src", "long-run-command-mcp.ts");
+
+    return new Promise<void>((resolve, reject) => {
+      let output = "";
+
+      const args = [
+        "@modelcontextprotocol/inspector",
+        "--cli",
+        "npx",
+        "tsx",
+        serverPath,
+        "-c",
+        configPath,
+        "--method",
+        "tools/call",
+        "--tool-name",
+        "run_ls_no_args"
+      ];
+      console.log("Running tool call without args with npx " + args.join(" "));
+
+      // Run MCP Inspector to call the tool
+      inspectorProcess = spawn("npx", args, {
+        stdio: ["pipe", "pipe", "pipe"],
+        cwd: join(__dirname, "..")
+      });
+
+      inspectorProcess.stdout?.on("data", (data) => {
+        output += data.toString();
+      });
+
+      inspectorProcess.stderr?.on("data", (data) => {
+        console.error("Inspector stderr:", data.toString());
+      });
+
+      inspectorProcess.on("error", reject);
+
+      inspectorProcess.on("close", (code) => {
+        console.log("Process exited with code:", code);
+        console.log("Output received:", output);
+
+        if (code !== 0) {
+          reject(new Error(`Inspector exited with code ${code}`));
+          return;
+        }
+
+        // Parse the output
+        try {
+          const result = JSON.parse(output);
+          console.log("Tool call result:", JSON.stringify(result, null, 2));
+
+          // Check the result
+          expect(result).toBeDefined();
+          expect(result.content).toBeDefined();
+          expect(Array.isArray(result.content)).toBe(true);
+          
+          // Parse the text content
+          const textContent = result.content[0];
+          expect(textContent.type).toBe("text");
+          const executionResult = JSON.parse(textContent.text);
+          
+          expect(executionResult.success).toBe(true);
+          expect(executionResult.command).toBe("ls");
+          expect(executionResult.outputPath).toBeDefined();
+          expect(executionResult.errorPath).toBeDefined();
+          expect(executionResult.exitCode).toBe(0);
+
+          resolve();
+        } catch (e) {
+          console.error("Failed to parse output:", e);
+          reject(new Error("Failed to parse tool call result"));
+        }
+      });
+    });
+  }, 10000);
 });
