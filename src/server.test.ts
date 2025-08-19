@@ -57,7 +57,7 @@ describe("startServer", () => {
     // 各コマンドに対してツールが登録されたことを確認
     expect(mockMcpServer.tool).toHaveBeenCalledWith(
       "run_test_command",
-      "Execute test_command command: npm test (workdir: /test)",
+      "Execute npm test (workdir: /test)",
       {
         type: "object",
         properties: {},
@@ -66,7 +66,7 @@ describe("startServer", () => {
     );
     expect(mockMcpServer.tool).toHaveBeenCalledWith(
       "run_build",
-      "Execute build command: npm run build (workdir: /build)",
+      "Execute npm run build (workdir: /build)",
       {
         type: "object",
         properties: {},

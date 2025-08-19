@@ -1,0 +1,17 @@
+{
+  "outputdir": "./test-logs",
+  "commands": {
+    "echo_with_args": {
+      "command": "echo",
+      "workdir": ".",
+      "additionalArgs": true,
+      "description": "Echo command that supports additional arguments"
+    },
+    "ls_no_args": {
+      "command": "ls",
+      "workdir": ".",
+      "additionalArgs": false,
+      "description": "List files without additional arguments"
+    }
+  }
+}

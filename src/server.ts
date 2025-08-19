@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -19,35 +20,25 @@ function createCommandTool(
   const command = getCommand(config, key);
   const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, "_");
 
-  const schema = command.additionalArgs
-    ? {
-        type: "object" as const,
-        properties: {
-          additionalArgs: {
-            type: "array" as const,
-            items: { type: "string" as const },
-            description: "Additional arguments to pass to the command",
-          },
-        },
-      }
-    : {
-        type: "object" as const,
-        properties: {},
-      };
-
   const baseDescription = `Execute ${command.command} (workdir: ${command.workdir})${command.additionalArgs ? " - supports additional arguments." : ""}`;
   const fullDescription = command.description
     ? `${baseDescription}\n\n${command.description}`
     : baseDescription;
 
-  mcpServer.tool(
-    `run_${safeKey}`,
-    fullDescription,
-    schema,
-    async (args: any) => {
+  if (command.additionalArgs) {
+    // Use Zod schema for tools with additional arguments
+    const argsSchema = {
+      args: z.array(z.string()).describe("Additional arguments to pass to the command")
+    };
+    
+    mcpServer.tool(
+      `run_${safeKey}`,
+      fullDescription,
+      argsSchema,
+      async (args: { args: string[] }) => {
       try {
         const result = await execute(
-          { key, additionalArgs: args?.additionalArgs },
+          { key, additionalArgs: args?.args },
           config,
         );
 
@@ -87,8 +78,60 @@ function createCommandTool(
           ],
         };
       }
-    },
+    }
   );
+  } else {
+    // Tool without additional arguments
+    mcpServer.tool(
+      `run_${safeKey}`,
+      fullDescription,
+      {},
+      async () => {
+        try {
+          const result = await execute(
+            { key },
+            config,
+          );
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    success: true,
+                    command: command.command,
+                    workdir: command.workdir,
+                    outputPath: result.outputPath,
+                    errorPath: result.errorPath,
+                    exitCode: result.exitCode,
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    success: false,
+                    error: error instanceof Error ? error.message : String(error),
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        }
+      }
+    );
+  }
 }
 
 export async function startServer(
