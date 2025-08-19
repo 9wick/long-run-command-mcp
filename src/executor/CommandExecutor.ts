@@ -13,6 +13,7 @@ export interface ExecutionResult {
   outputPath: string;
   errorPath: string;
   exitCode: number;
+  executionTimeMs: number;
 }
 
 async function validateWorkdir(workdir: string): Promise<void> {
@@ -49,6 +50,7 @@ function executeCommand(
   additionalArgs?: string[],
 ): Promise<ExecutionResult> {
   return new Promise((resolve, reject) => {
+    const startTime = Date.now();
     const isWindows = process.platform === "win32";
     const shell = isWindows ? "cmd.exe" : "/bin/sh";
 
@@ -72,11 +74,13 @@ function executeCommand(
 
     childProcess.on("exit", async (code) => {
       await new Promise((resolve) => setTimeout(resolve, 100));
+      const endTime = Date.now();
 
       resolve({
         outputPath: logPaths.outputPath,
         errorPath: logPaths.errorPath,
         exitCode: code || 0,
+        executionTimeMs: endTime - startTime,
       });
     });
   });

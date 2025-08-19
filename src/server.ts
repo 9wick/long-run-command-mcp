@@ -46,6 +46,7 @@ async function executeCommand(
       outputPath: result.outputPath,
       errorPath: result.errorPath,
       exitCode: result.exitCode,
+      executionTimeMs: result.executionTimeMs,
     });
   } catch (error) {
     return formatToolResponse({

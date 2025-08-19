@@ -123,6 +123,7 @@ describe("startServer", () => {
       outputPath: "/tmp/out.log",
       errorPath: "/tmp/err.log",
       exitCode: 0,
+      executionTimeMs: 1234,
     });
 
     await startServer("./config.json");
@@ -138,6 +139,7 @@ describe("startServer", () => {
       outputPath: "/tmp/out.log",
       errorPath: "/tmp/err.log",
       exitCode: 0,
+      executionTimeMs: 1234,
     });
   });
 

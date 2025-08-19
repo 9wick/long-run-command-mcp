@@ -57,6 +57,8 @@ describe("CommandExecutor", () => {
       // 結果の確認
       expect(result).toHaveProperty("outputPath");
       expect(result).toHaveProperty("errorPath");
+      expect(result).toHaveProperty("executionTimeMs");
+      expect(result.executionTimeMs).toBeGreaterThan(0);
       expect(result.exitCode).toBe(0);
 
       // ログファイルが作成されていることを確認
@@ -173,6 +175,8 @@ describe("CommandExecutor", () => {
           securityConfig,
         );
         expect(result).toHaveProperty("exitCode");
+        expect(result).toHaveProperty("executionTimeMs");
+        expect(result.executionTimeMs).toBeGreaterThan(0);
         expect(result.exitCode).toBe(0);
       }
 
@@ -190,6 +194,8 @@ describe("CommandExecutor", () => {
         securityConfig,
       );
       expect(result).toHaveProperty("exitCode");
+      expect(result).toHaveProperty("executionTimeMs");
+      expect(result.executionTimeMs).toBeGreaterThan(0);
       expect(result.exitCode).toBe(0);
 
       await fs.rm(testOutputDir, { recursive: true }).catch(() => {});

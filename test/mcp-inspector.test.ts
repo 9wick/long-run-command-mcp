@@ -159,6 +159,9 @@ describe("MCP Inspector CLI Schema Test", () => {
           expect(executionResult.outputPath).toBeDefined();
           expect(executionResult.errorPath).toBeDefined();
           expect(executionResult.exitCode).toBe(0);
+          expect(executionResult.executionTimeMs).toBeDefined();
+          expect(typeof executionResult.executionTimeMs).toBe('number');
+          expect(executionResult.executionTimeMs).toBeGreaterThan(0);
 
           // Check the actual output content
           const stdout = readFileSync(executionResult.outputPath, 'utf-8');
@@ -242,6 +245,9 @@ describe("MCP Inspector CLI Schema Test", () => {
           expect(executionResult.outputPath).toBeDefined();
           expect(executionResult.errorPath).toBeDefined();
           expect(executionResult.exitCode).toBe(0);
+          expect(executionResult.executionTimeMs).toBeDefined();
+          expect(typeof executionResult.executionTimeMs).toBe('number');
+          expect(executionResult.executionTimeMs).toBeGreaterThan(0);
 
           // Check the actual output content
           const stdout = readFileSync(executionResult.outputPath, 'utf-8');
