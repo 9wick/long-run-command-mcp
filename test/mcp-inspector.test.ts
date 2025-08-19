@@ -1,5 +1,6 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import { describe, it, expect, afterEach } from "vitest";
 
 describe("MCP Inspector CLI Schema Test", () => {
@@ -159,6 +160,12 @@ describe("MCP Inspector CLI Schema Test", () => {
           expect(executionResult.errorPath).toBeDefined();
           expect(executionResult.exitCode).toBe(0);
 
+          // Check the actual output content
+          const stdout = readFileSync(executionResult.outputPath, 'utf-8');
+          expect(stdout).toContain('hello');
+          expect(stdout).toContain('world');
+          expect(stdout).toContain('test');
+
           resolve();
         } catch (e) {
           console.error("Failed to parse output:", e);
@@ -235,6 +242,13 @@ describe("MCP Inspector CLI Schema Test", () => {
           expect(executionResult.outputPath).toBeDefined();
           expect(executionResult.errorPath).toBeDefined();
           expect(executionResult.exitCode).toBe(0);
+
+          // Check the actual output content
+          const stdout = readFileSync(executionResult.outputPath, 'utf-8');
+          // ls should output at least something (current directory contents)
+          expect(stdout.length).toBeGreaterThan(0);
+          // Check that ls output contains the test-config.json file
+          expect(stdout).toContain('test-config.json');
 
           resolve();
         } catch (e) {
