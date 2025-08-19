@@ -33,9 +33,15 @@ async function executeCommand(
   try {
     const result = await execute({ key, additionalArgs }, config);
 
+    // Build the full command including additional arguments
+    const fullCommand =
+      additionalArgs && additionalArgs.length > 0
+        ? `${command.command} ${additionalArgs.map((arg) => `"${arg.replace(/"/g, '\\"')}"`).join(" ")}`
+        : command.command;
+
     return formatToolResponse({
       success: true,
-      command: command.command,
+      command: fullCommand,
       workdir: command.workdir,
       outputPath: result.outputPath,
       errorPath: result.errorPath,
@@ -77,10 +83,8 @@ function createCommandTool(
         executeCommand(key, config, args?.args),
     );
   } else {
-    mcpServer.tool(
-      toolName,
-      fullDescription,
-      async (_extra) => executeCommand(key, config),
+    mcpServer.tool(toolName, fullDescription, async (_extra) =>
+      executeCommand(key, config),
     );
   }
 }

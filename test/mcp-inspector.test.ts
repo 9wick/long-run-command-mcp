@@ -155,7 +155,7 @@ describe("MCP Inspector CLI Schema Test", () => {
           const executionResult = JSON.parse(textContent.text);
           
           expect(executionResult.success).toBe(true);
-          expect(executionResult.command).toBe("echo");
+          expect(executionResult.command).toBe('echo "hello" "world" "test"');
           expect(executionResult.outputPath).toBeDefined();
           expect(executionResult.errorPath).toBeDefined();
           expect(executionResult.exitCode).toBe(0);
