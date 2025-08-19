@@ -35,9 +35,14 @@ function createCommandTool(
         properties: {},
       };
 
+  const baseDescription = `Execute ${command.command} (workdir: ${command.workdir})${command.additionalArgs ? " - supports additional arguments." : ""}`;
+  const fullDescription = command.description
+    ? `${baseDescription}\n\n${command.description}`
+    : baseDescription;
+
   mcpServer.tool(
     `run_${safeKey}`,
-    `Execute ${key} command: ${command.command} (workdir: ${command.workdir})${command.additionalArgs ? " - supports additional arguments" : ""}`,
+    fullDescription,
     schema,
     async (args: any) => {
       try {

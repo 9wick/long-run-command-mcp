@@ -7,7 +7,9 @@
     },
     "test": {
       "workdir": "./",
-      "command": "npm test"
+      "command": "npm test",
+      "additionalArgs": true,
+      "description": "run test. If you want to run a specific test, use `npm test -- -t <test-name>`"
     },
     "lint": {
       "workdir": "./",

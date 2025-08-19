@@ -45,6 +45,26 @@ describe("ConfigManager", () => {
       expect(config.commands.test.command).toBe("echo test");
     });
 
+    it("should load a config file with description", async () => {
+      const testConfig = {
+        outputdir: "./output",
+        commands: {
+          test: {
+            workdir: "./",
+            command: "echo test",
+            description: "This is a test command example",
+          },
+        },
+      };
+
+      await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
+      const config = await loadConfig(testConfigPath);
+
+      expect(config.commands.test.description).toBe(
+        "This is a test command example",
+      );
+    });
+
     it("should throw error when outputdir is missing", async () => {
       const testConfig = {
         commands: {
@@ -101,6 +121,24 @@ describe("ConfigManager", () => {
       await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
       await expect(loadConfig(testConfigPath)).rejects.toThrow(
         "Config validation error: commands.test.command is required and must be a string",
+      );
+    });
+
+    it("should throw error when description is not a string", async () => {
+      const testConfig = {
+        outputdir: "./output",
+        commands: {
+          test: {
+            workdir: "./",
+            command: "echo test",
+            description: 123,
+          },
+        },
+      };
+
+      await fs.writeFile(testConfigPath, JSON.stringify(testConfig, null, 2));
+      await expect(loadConfig(testConfigPath)).rejects.toThrow(
+        "Config validation error: commands.test.description must be a string",
       );
     });
   });

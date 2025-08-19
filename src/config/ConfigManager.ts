@@ -10,6 +10,7 @@ export interface CommandConfig {
   workdir: string;
   command: string;
   additionalArgs?: boolean;
+  description?: string;
 }
 
 function validateConfig(config: unknown): Config {
@@ -56,6 +57,11 @@ function validateConfig(config: unknown): Config {
     ) {
       throw new Error(
         `Config validation error: commands.${key}.additionalArgs must be a boolean`,
+      );
+    }
+    if (cmd.description !== undefined && typeof cmd.description !== "string") {
+      throw new Error(
+        `Config validation error: commands.${key}.description must be a string`,
       );
     }
   }
