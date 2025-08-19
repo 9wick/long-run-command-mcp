@@ -58,19 +58,11 @@ describe("startServer", () => {
     expect(mockMcpServer.tool).toHaveBeenCalledWith(
       "run_test_command",
       "Execute npm test (workdir: /test)",
-      {
-        type: "object",
-        properties: {},
-      },
       expect.any(Function),
     );
     expect(mockMcpServer.tool).toHaveBeenCalledWith(
       "run_build",
       "Execute npm run build (workdir: /build)",
-      {
-        type: "object",
-        properties: {},
-      },
       expect.any(Function),
     );
 
@@ -104,13 +96,11 @@ describe("startServer", () => {
     expect(mockMcpServer.tool).toHaveBeenCalledWith(
       "run_test_command",
       expect.any(String),
-      expect.any(Object),
       expect.any(Function),
     );
     expect(mockMcpServer.tool).toHaveBeenCalledWith(
       "run_build_deploy",
       expect.any(String),
-      expect.any(Object),
       expect.any(Function),
     );
   });
@@ -137,8 +127,8 @@ describe("startServer", () => {
 
     await startServer("./config.json");
 
-    const handler = mockMcpServer.tool.mock.calls[0][3] as () => Promise<any>;
-    const result = await handler();
+    const handler = mockMcpServer.tool.mock.calls[0][2] as () => Promise<any>;
+    const result = await handler({});
     const text = (result.content[0] as any).text;
     const parsed = JSON.parse(text);
     expect(parsed).toEqual({
@@ -169,8 +159,8 @@ describe("startServer", () => {
 
     await startServer("./config.json");
 
-    const handler = mockMcpServer.tool.mock.calls[0][3] as () => Promise<any>;
-    const result = await handler();
+    const handler = mockMcpServer.tool.mock.calls[0][2] as () => Promise<any>;
+    const result = await handler({});
     const text = (result.content[0] as any).text;
     const parsed = JSON.parse(text);
     expect(parsed).toEqual({

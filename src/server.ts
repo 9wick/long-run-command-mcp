@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
 import {
   type Config,
   getAvailableKeys,
@@ -11,6 +11,43 @@ import {
   loadConfig,
 } from "./config/ConfigManager.ts";
 import { execute } from "./executor/CommandExecutor.ts";
+
+function formatToolResponse(data: Record<string, any>) {
+  return {
+    content: [
+      {
+        type: "text" as const,
+        text: JSON.stringify(data, null, 2),
+      },
+    ],
+  };
+}
+
+async function executeCommand(
+  key: string,
+  config: Config,
+  additionalArgs?: string[],
+) {
+  const command = getCommand(config, key);
+
+  try {
+    const result = await execute({ key, additionalArgs }, config);
+
+    return formatToolResponse({
+      success: true,
+      command: command.command,
+      workdir: command.workdir,
+      outputPath: result.outputPath,
+      errorPath: result.errorPath,
+      exitCode: result.exitCode,
+    });
+  } catch (error) {
+    return formatToolResponse({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
 
 function createCommandTool(
   mcpServer: McpServer,
@@ -25,111 +62,25 @@ function createCommandTool(
     ? `${baseDescription}\n\n${command.description}`
     : baseDescription;
 
+  const toolName = `run_${safeKey}`;
+
   if (command.additionalArgs) {
-    // Use Zod schema for tools with additional arguments
-    const argsSchema = {
-      args: z.array(z.string()).describe("Additional arguments to pass to the command")
-    };
-    
     mcpServer.tool(
-      `run_${safeKey}`,
+      toolName,
       fullDescription,
-      argsSchema,
-      async (args: { args: string[] }) => {
-      try {
-        const result = await execute(
-          { key, additionalArgs: args?.args },
-          config,
-        );
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  success: true,
-                  command: command.command,
-                  workdir: command.workdir,
-                  outputPath: result.outputPath,
-                  errorPath: result.errorPath,
-                  exitCode: result.exitCode,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  success: false,
-                  error: error instanceof Error ? error.message : String(error),
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
-      }
-    }
-  );
+      {
+        args: z
+          .array(z.string())
+          .describe("Additional arguments to pass to the command"),
+      },
+      async (args: { args: string[] }, _extra) =>
+        executeCommand(key, config, args?.args),
+    );
   } else {
-    // Tool without additional arguments
     mcpServer.tool(
-      `run_${safeKey}`,
+      toolName,
       fullDescription,
-      {},
-      async () => {
-        try {
-          const result = await execute(
-            { key },
-            config,
-          );
-
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(
-                  {
-                    success: true,
-                    command: command.command,
-                    workdir: command.workdir,
-                    outputPath: result.outputPath,
-                    errorPath: result.errorPath,
-                    exitCode: result.exitCode,
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          };
-        } catch (error) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(
-                  {
-                    success: false,
-                    error: error instanceof Error ? error.message : String(error),
-                  },
-                  null,
-                  2,
-                ),
-              },
-            ],
-          };
-        }
-      }
+      async (_extra) => executeCommand(key, config),
     );
   }
 }
